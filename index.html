@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Disfracity · Galería de fotos</title>
+<meta name="description" content="Encontrá y descargá tus fotos de Disfracity. Buscá por disfraz, color o lo que estabas haciendo.">
+<meta name="theme-color" content="#05040a">
+<meta name="robots" content="noindex, nofollow">   <!-- solo para quien tenga el link; sacar esta linea para que Google la muestre -->
+<link rel="icon" href="img/logo-320.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;500;600;700&family=Unbounded:wght@700;900&display=swap">
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="lockup">
+    <img class="logo" src="img/logo-320.png" alt="" width="96" height="96">
+    <h1 class="marca" aria-label="Disfracity, galería de fotos">
+      <span class="l1">DISFRA</span>
+      <span class="l2">CITY<span class="tag">FOTOS</span></span>
+    </h1>
+  </div>
+  <p class="sub">Escribí el disfraz, el color o lo que estabas haciendo y encontrá tus fotos.</p>
+</header>
+
+<div class="barra">
+  <div class="barra-in">
+    <form class="buscador" id="form-buscar" role="search" autocomplete="off">
+      <label for="q" class="sr">Buscar fotos</label>
+      <svg class="lupa" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <input id="q" type="search" inputmode="search" enterkeyhint="search" placeholder="Probá: pirata, gente bailando, disfraz rojo…" maxlength="80">
+      <button type="button" id="borrar" class="borrar" aria-label="Borrar búsqueda" hidden>×</button>
+    </form>
+  </div>
+</div>
+
+<main>
+  <div class="sugeridas" id="sugeridas" role="group" aria-label="Búsquedas sugeridas"></div>
+
+  <section class="estado" aria-live="polite">
+    <p id="resumen"></p>
+    <div class="acciones">
+      <button type="button" id="sel-todas" class="btn-texto" hidden>Seleccionar todas</button>
+    </div>
+  </section>
+
+  <div class="resultados" id="grilla"></div>
+  <p class="vacio" id="vacio" hidden></p>
+</main>
+
+<footer class="pie">
+  <p class="hashtag">#LaFiestaQueFaltaba</p>
+  <p><a href="https://www.instagram.com/disfracity.ok/" target="_blank" rel="noopener">@disfracity.ok</a></p>
+  <p class="aviso">¿Querés que saquemos una foto tuya? Escribinos por Instagram.</p>
+</footer>
+
+<div class="barra-sel" id="barra-sel" hidden>
+  <span id="sel-cuenta"></span>
+  <button type="button" id="sel-limpiar" class="btn-texto">Limpiar</button>
+  <button type="button" id="sel-zip" class="btn-primario">Descargar ZIP</button>
+</div>
+
+<div class="visor" id="visor" role="dialog" aria-modal="true" aria-label="Foto" hidden>
+  <div class="visor-top">
+    <span id="visor-pos"></span>
+    <button type="button" id="visor-cerrar" class="icono" aria-label="Cerrar">×</button>
+  </div>
+  <button type="button" id="visor-ant" class="flecha izq" aria-label="Foto anterior">‹</button>
+  <figure class="visor-foto"><img id="visor-img" alt=""></figure>
+  <button type="button" id="visor-sig" class="flecha der" aria-label="Foto siguiente">›</button>
+  <div class="visor-pie">
+    <div class="visor-tags" id="visor-tags"></div>
+    <div class="visor-botones">
+      <button type="button" id="visor-sel" class="btn-secundario">Seleccionar</button>
+      <a id="visor-dl" class="btn-primario" download>Descargar</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/zip.js" defer></script>
+<script src="js/app.js" defer></script>
+</body>
+</html>

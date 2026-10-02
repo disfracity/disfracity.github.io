@@ -1,0 +1,26 @@
+{
+  "titulo": "Disfracity",
+  "ia": false,
+  "ediciones": [
+    {
+      "slug": "primera",
+      "nombre": "Primera edición",
+      "anio": 2022
+    },
+    {
+      "slug": "segunda",
+      "nombre": "Segunda edición",
+      "anio": 2023
+    },
+    {
+      "slug": "tercera",
+      "nombre": "Tercera edición",
+      "anio": 2024
+    },
+    {
+      "slug": "cuarta",
+      "nombre": "Cuarta edición",
+      "anio": 2025
+    }
+  ]
+}
