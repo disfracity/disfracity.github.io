@@ -789,12 +789,20 @@ function mostrarVisor() {
   for (const d of [1, -1]) { const v = vista[visorIdx + d]; if (v) new Image().src = v.w; }
 }
 
+function animarFoto() {            // la foto entra con zoom apenas esta cargada (el CSS la oculta hasta tener .entra)
+  const entrar = () => el.visorImg.classList.add('entra');
+  if (el.visorImg.complete && el.visorImg.naturalWidth) entrar();
+  else el.visorImg.addEventListener('load', entrar, { once: true });
+}
+
 function abrirVisor(i) {
   visorIdx = i;
+  el.visorImg.classList.remove('entra');
   mostrarVisor();
   el.visor.hidden = false;
   document.body.style.overflow = 'hidden';
   el.visorCerrar.focus();
+  animarFoto();
 }
 function cerrarVisor() {
   const li = vista[visorIdx] && liPorId.get(vista[visorIdx].id);
