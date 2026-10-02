@@ -56,7 +56,7 @@ const el = {
   resumen: $('#resumen'), selTodas: $('#sel-todas'),
   grilla: $('#grilla'), vacio: $('#vacio'), sugeridas: $('#sugeridas'),
   barra: $('#barra-sel'), selCuenta: $('#sel-cuenta'), selLimpiar: $('#sel-limpiar'), selZip: $('#sel-zip'),
-  visor: $('#visor'), visorImg: $('#visor-img'), visorPos: $('#visor-pos'), visorTags: $('#visor-tags'),
+  visor: $('#visor'), visorImg: $('#visor-img'), visorPos: $('#visor-pos'),
   visorSel: $('#visor-sel'), visorDl: $('#visor-dl'), visorCerrar: $('#visor-cerrar'),
   visorAnt: $('#visor-ant'), visorSig: $('#visor-sig'),
 };
@@ -786,8 +786,6 @@ function mostrarVisor() {
   el.visorDl.href = p.w;
   el.visorDl.setAttribute('download', `Disfracity-${p.id}.jpg`);
   actualizarBotonVisor();
-  el.visorTags.innerHTML = p.tags.filter(t => t[2] >= 0.2).sort((a, b) => b[2] - a[2]).slice(0, 6)
-    .map(t => `<button type="button" class="chip" data-q="${esc(t[0])}">${esc(t[0])}</button>`).join('');
   for (const d of [1, -1]) { const v = vista[visorIdx + d]; if (v) new Image().src = v.w; }
 }
 
@@ -816,13 +814,6 @@ el.visorCerrar.addEventListener('click', cerrarVisor);
 el.visorAnt.addEventListener('click', () => moverVisor(-1));
 el.visorSig.addEventListener('click', () => moverVisor(1));
 el.visorSel.addEventListener('click', () => alternarSel(vista[visorIdx].id));
-el.visorTags.addEventListener('click', e => {
-  const b = e.target.closest('[data-q]');
-  if (!b) return;
-  cerrarVisor();
-  el.q.value = b.dataset.q;
-  buscar({ inmediato: true, ir: 'siempre' });
-});
 el.visor.addEventListener('click', e => { if (e.target === el.visor || e.target.classList.contains('visor-foto')) cerrarVisor(); });
 document.addEventListener('keydown', e => {
   if (el.visor.hidden) return;

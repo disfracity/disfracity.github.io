@@ -271,8 +271,6 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .flecha.izq { grid-column: 1; }
 .flecha.der { grid-column: 3; }
 .visor-pie { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px 16px; justify-content: space-between; align-items: center; padding: 8px 18px 18px; }
-.visor-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.visor-tags .chip { min-height: 32px; padding: 3px 13px; font-size: .86rem; }
 .visor-botones { display: flex; gap: 8px; margin-left: auto; }
 
 @media (max-width: 640px) {
