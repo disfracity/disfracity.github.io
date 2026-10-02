@@ -126,6 +126,18 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .anio-ver:hover, .volver:hover { color: #fff; }
 .volver { padding-left: 0; }
 
+/* boton al reel de Instagram de cada edicion */
+.anio-acc { display: flex; align-items: center; gap: 12px; flex: none; margin-left: auto; }
+.anio-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.anio-reel {
+  display: inline-flex; align-items: center; gap: 7px; padding: 8px 15px 7px; border-radius: 999px; white-space: nowrap; text-decoration: none;
+  border: 1.5px solid transparent; color: #fff; font: 400 1rem/1 var(--etiqueta); letter-spacing: .06em; text-transform: uppercase;
+  background: linear-gradient(var(--superficie), var(--superficie)) padding-box, var(--degradado) border-box;
+  transition: box-shadow .15s;
+}
+.anio-reel svg { color: var(--rosa); }
+.anio-reel:hover { box-shadow: 0 0 18px rgba(255, 119, 189, .45); }
+
 .tira-caja { position: relative; }
 .tira {
   --alto-fila: clamp(140px, 17vw, 210px);
@@ -294,6 +306,8 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
   .sugeridas { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
   .sugeridas::-webkit-scrollbar { display: none; }
   .sugeridas .chip, .sugeridas .rotulo { flex: none; }
+  .tanda-cab { flex-wrap: wrap; row-gap: 2px; }
+  .tanda-cab .anio-t { flex: 1 1 100%; }
   .visor { grid-template-columns: 0 1fr 0; }
   .flecha { display: none; }
   .visor-botones { width: 100%; }

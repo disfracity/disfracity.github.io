@@ -5,22 +5,26 @@
     {
       "slug": "primera",
       "nombre": "Primera edición",
-      "anio": 2022
+      "anio": 2022,
+      "reel": "https://www.instagram.com/reel/CkVuW6PumZr/"
     },
     {
       "slug": "segunda",
       "nombre": "Segunda edición",
-      "anio": 2023
+      "anio": 2023,
+      "reel": "https://www.instagram.com/reel/CySDXf2rDlf/"
     },
     {
       "slug": "tercera",
       "nombre": "Tercera edición",
-      "anio": 2024
+      "anio": 2024,
+      "reel": "https://www.instagram.com/reel/DQSqMk7kQC-/"
     },
     {
       "slug": "cuarta",
       "nombre": "Cuarta edición",
-      "anio": 2025
+      "anio": 2025,
+      "reel": "https://www.instagram.com/reel/DP2KDE3kd57/"
     }
   ]
 }

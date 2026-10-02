@@ -337,12 +337,20 @@ function tituloEd(ed, n) {
     `<span class="anio-c">${fmt(n)} ${n === 1 ? 'foto' : 'fotos'}</span></h2>`;
 }
 
+/** boton al reel de Instagram de la edicion (config.json > ediciones[].reel); si no hay link, no se muestra */
+function reelDe(ed) {
+  const info = edInfo.get(ed);
+  if (!info || !/^https:\/\/www\.instagram\.com\//.test(info.reel || '')) return '';
+  return `<a class="anio-reel" href="${esc(info.reel)}" target="_blank" rel="noopener noreferrer" aria-label="Ver el reel de la ${esc(info.nombre)} en Instagram">` +
+    '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg><span>Ver reel</span></a>';
+}
+
 /** una tanda de la pantalla principal: titulo del anio y tira horizontal con fotos de muestra */
 function crearTanda(ed, total, mostradas) {
   const sec = document.createElement('section');
   sec.className = 'anio tanda';
   sec.innerHTML =
-    `<div class="tanda-cab">${tituloEd(ed, total)}<button type="button" class="anio-ver" data-ed="${esc(ed)}">Ver todas →</button></div>` +
+    `<div class="tanda-cab">${tituloEd(ed, total)}<div class="anio-acc">${reelDe(ed)}<button type="button" class="anio-ver" data-ed="${esc(ed)}">Ver todas →</button></div></div>` +
     `<div class="tira-caja"><button type="button" class="flecha-tira izq" aria-label="Fotos anteriores">‹</button>` +
     `<ul class="tira"></ul>` +
     `<button type="button" class="flecha-tira der" aria-label="Más fotos">›</button></div>`;
@@ -359,7 +367,7 @@ function crearTanda(ed, total, mostradas) {
 function cabeceraAnio(ed, n) {
   const sec = document.createElement('section');
   sec.className = 'anio';
-  sec.innerHTML = `<button type="button" class="volver">← Todas las ediciones</button>${tituloEd(ed, n)}`;
+  sec.innerHTML = `<div class="anio-nav"><button type="button" class="volver">← Todas las ediciones</button>${reelDe(ed)}</div>${tituloEd(ed, n)}`;
   return sec;
 }
 
