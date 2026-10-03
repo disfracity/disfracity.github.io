@@ -59,6 +59,8 @@ const el = {
   visor: $('#visor'), visorImg: $('#visor-img'), visorPos: $('#visor-pos'),
   visorSel: $('#visor-sel'), visorDl: $('#visor-dl'), visorCerrar: $('#visor-cerrar'),
   visorAnt: $('#visor-ant'), visorSig: $('#visor-sig'),
+  reelVisor: $('#reelvisor'), reelVideo: $('#reelvisor-video'), reelTitulo: $('#reelvisor-titulo'),
+  reelIg: $('#reelvisor-ig'), reelCerrar: $('#reelvisor-cerrar'),
 };
 
 const MAX_ZIP = 150;
@@ -338,21 +340,20 @@ function tituloEd(ed, n) {
     `<span class="anio-c">${fmt(n)} ${n === 1 ? 'foto' : 'fotos'}</span></h2>`;
 }
 
-/** reels de Instagram de una edicion (config.json > ediciones[].reels), del mas viejo al mas nuevo; solo los que tienen portada real */
+/** reels de una edicion (config.json > ediciones[].reels, los prepara reels.py), del mas viejo al mas nuevo; solo los que tienen archivos */
 function reelsDe(ed) {
-  return (edInfo.get(ed)?.reels || []).filter(r => /^[\w-]{6,20}$/.test(r.codigo || '') && r.portada);
+  return (edInfo.get(ed)?.reels || []).filter(r => /^[\w-]{6,20}$/.test(r.codigo || '') && r.portada && r.video);
 }
 
-/** un reel es un mosaico mas de la tira; abre el reel en Instagram (Instagram no deja reproducirlo adentro de otra pagina) */
+/** un reel es un mosaico mas de la tira: su vista corta (sin sonido) se reproduce sola mientras se ve; al tocarlo se abre completo */
 function crearReel(r) {
   const li = document.createElement('li');
   li.className = 'reel';
   li.innerHTML =
-    `<a href="https://www.instagram.com/reel/${esc(r.codigo)}/" target="_blank" rel="noopener noreferrer" aria-label="Ver el reel en Instagram: ${esc(r.titulo)}">` +
-    (r.portada ? `<img src="${esc(r.portada)}" alt="" loading="lazy" decoding="async">` : '') +
-    '<span class="reel-tag">Reel</span>' +
-    '<span class="reel-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span>' +
-    `<span class="reel-titulo">${esc(r.titulo)}</span></a>`;
+    `<button type="button" class="reel-abrir" data-reel="${esc(r.codigo)}" aria-label="Ver el reel: ${esc(r.titulo)}">` +
+    `<video muted loop playsinline preload="none" poster="${esc(r.portada)}"${r.preview ? ` data-src="${esc(r.preview)}"` : ''} aria-hidden="true" tabindex="-1"></video>` +
+    '<span class="reel-tag"><svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg>Reel</span>' +
+    `<span class="reel-titulo">${esc(r.titulo)}</span></button>`;
   return li;
 }
 
@@ -449,7 +450,7 @@ function detenerTiras() {
 function bucleTiras(t) {
   const dt = Math.min(0.064, (t - tUltimo) / 1000);
   tUltimo = t;
-  const visorAbierto = !el.visor.hidden;
+  const visorAbierto = !el.visor.hidden || !el.reelVisor.hidden;
   for (const s of tirasAuto) {
     const quieta = s.cerca || s.tocando || s.enfoque || !s.visible || visorAbierto || t < s.pausa;
     s.corriendo = !quieta;
@@ -507,10 +508,75 @@ function activarTiras() {
   }
 }
 
+/* ---------- reels ----------
+   Cada reel tiene una vista corta sin sonido (reels/<codigo>_p.mp4) que se reproduce sola solo mientras se ve en pantalla,
+   y el reel completo (reels/<codigo>.mp4) que se abre en una ventana dentro de la pagina al tocarlo. */
+const ahorroDatos = !!navigator.connection?.saveData;
+let reelOrigen = null;   // el boton que abrio la ventana, para devolverle el foco al cerrar
+
+const reelObservador = 'IntersectionObserver' in window
+  ? new IntersectionObserver(entradas => {
+    for (const e of entradas) {
+      const v = e.target;
+      if (e.isIntersecting && el.reelVisor.hidden) {
+        if (!v.getAttribute('src') && v.dataset.src) v.src = v.dataset.src;
+        v.muted = true;
+        v.play().catch(() => {});
+      } else v.pause();
+    }
+  }, { threshold: 0.3 })
+  : null;
+
+function vigilarReels() {
+  reelObservador?.disconnect();
+  if (!reelObservador || movimientoReducido || ahorroDatos) return;   // sin animaciones o con ahorro de datos queda la portada quieta
+  el.grilla.querySelectorAll('.reel video').forEach(v => reelObservador.observe(v));
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) el.grilla.querySelectorAll('.reel video').forEach(v => v.pause());
+  else vigilarReels();
+});
+
+function abrirReel(codigo, origen) {
+  let hallado = null;
+  for (const ed of CONF.ediciones) {
+    const r = (ed.reels || []).find(x => x.codigo === codigo);
+    if (r) { hallado = { r, ed }; break; }
+  }
+  if (!hallado) return;
+  const { r, ed } = hallado;
+  reelOrigen = origen;
+  el.reelTitulo.textContent = `${ed.nombre} · ${r.titulo}`;
+  el.reelIg.href = `https://www.instagram.com/reel/${r.codigo}/`;
+  el.reelVideo.poster = r.portada;
+  el.reelVideo.src = r.video;
+  el.grilla.querySelectorAll('.reel video').forEach(v => v.pause());
+  el.reelVisor.hidden = false;
+  document.body.style.overflow = 'hidden';
+  el.reelCerrar.focus();
+  el.reelVideo.play().catch(() => {});   // lo abre un toque o clic, asi que el navegador deja reproducir con sonido
+}
+
+function cerrarReel() {
+  el.reelVideo.pause();
+  el.reelVideo.removeAttribute('src');
+  el.reelVideo.load();
+  el.reelVisor.hidden = true;
+  document.body.style.overflow = '';
+  vigilarReels();
+  if (reelOrigen?.isConnected) reelOrigen.focus({ preventScroll: true });
+  reelOrigen = null;
+}
+
+el.reelCerrar.addEventListener('click', cerrarReel);
+el.reelVisor.addEventListener('click', e => { if (e.target === el.reelVisor) cerrarReel(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !el.reelVisor.hidden) cerrarReel(); });
+
 let temporizadorTamano;
 window.addEventListener('resize', () => {
   clearTimeout(temporizadorTamano);
-  temporizadorTamano = setTimeout(() => { if (!edVista) activarTiras(); }, 250);
+  temporizadorTamano = setTimeout(() => { if (!edVista) { activarTiras(); vigilarReels(); } }, 250);
 });
 
 function pintar(lista, relacionadas, hayConsulta) {
@@ -533,6 +599,7 @@ function pintar(lista, relacionadas, hayConsulta) {
   vistaSel = edVista || hayConsulta ? lista : [];
   el.grilla.replaceChildren(frag);
   activarTiras();
+  vigilarReels();
 }
 
 function textoResumen(r, interp, calc) {
@@ -727,6 +794,8 @@ el.sugeridas.addEventListener('click', e => {
 /* ---------- seleccion y descarga ---------- */
 
 el.grilla.addEventListener('click', e => {
+  const reel = e.target.closest('.reel-abrir');
+  if (reel) { abrirReel(reel.dataset.reel, reel); return; }
   const entrar = e.target.closest('[data-ed]');
   if (entrar) { entrarAnio(entrar.dataset.ed); return; }
   if (e.target.closest('.volver')) { salirAnio(); return; }

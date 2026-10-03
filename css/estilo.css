@@ -128,7 +128,7 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 
 .tira-caja { position: relative; }
 .tira {
-  --alto-fila: clamp(250px, 40vw, 480px);
+  --alto-fila: clamp(200px, min(max(40vw, 250px), 62vh), 480px);   /* grande, pero sin pasarse del alto de la ventana (celular acostado) */
   list-style: none; margin: 0; padding: 8px 0 14px; display: flex; gap: 6px; overflow-x: auto;
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
@@ -140,41 +140,62 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .tira.solo-reels { --alto-fila: clamp(210px, 23vw, 290px); }   /* tira de reels arriba de la pagina de una edicion */
 .solo-reels .reel-titulo { padding-top: 34px; font-size: .9rem; }
 
-/* reels de Instagram: pasan en la misma tira que las fotos, en vertical (9:16) */
+/* reels: pasan en la misma tira que las fotos, en vertical (9:16), reproduciendose solos y sin sonido */
 .reel {
   position: relative; flex: 0 0 auto; width: calc(var(--alto-fila) * .5625); height: var(--alto-fila);
-  border-radius: 6px; overflow: hidden; background: var(--superficie); transition: transform .2s, box-shadow .2s;
+  border-radius: 6px; overflow: hidden; background: #000; transition: transform .2s, box-shadow .2s;
 }
-.reel a {
-  position: absolute; inset: 0; display: block; color: #fff; text-decoration: none;
-  background: radial-gradient(120% 70% at 50% 0%, rgba(255, 119, 189, .38), transparent 70%), linear-gradient(170deg, #2b1023, #0e0710);
+.reel-abrir {
+  position: absolute; inset: 0; width: 100%; padding: 0; border: 0; background: none; color: #fff; text-align: left; cursor: pointer;
 }
-.reel a::before {   /* portada provisoria: la mascara del logo, de fondo */
-  content: ""; position: absolute; left: 20%; right: 20%; top: 12%; aspect-ratio: 1;
-  background: url(../img/logo-320.png) center / contain no-repeat; opacity: .2;
-}
-.reel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
-.reel-play {
-  position: absolute; left: 50%; top: 45%; width: 56px; height: 56px; margin: -28px 0 0 -28px; display: grid; place-items: center;
-  border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, .75); background: rgba(9, 5, 10, .55);
-  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); transition: background .2s, color .2s, transform .2s;
-}
-.reel-play svg { width: 26px; height: 26px; margin-left: 3px; }
+.reel video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
 .reel-tag {
-  position: absolute; top: 9px; left: 9px; padding: 3px 9px 2px; border-radius: 4px;
+  position: absolute; top: 9px; left: 9px; display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px 2px; border-radius: 4px;
   background: var(--rosa); color: var(--tinta); font: 400 .85rem/1.1 var(--etiqueta); letter-spacing: .08em; text-transform: uppercase;
 }
 .reel-titulo {
-  position: absolute; left: 0; right: 0; bottom: 0; padding: 44px 11px 11px;
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 44px 11px 11px; opacity: 0; transition: opacity .2s;
   background: linear-gradient(transparent, rgba(9, 5, 10, .94)); font: 400 1rem/1.15 var(--etiqueta); letter-spacing: .05em; text-transform: uppercase;
 }
 @media (hover: hover) {
   .reel:hover { transform: translateY(-3px); z-index: 2; box-shadow: 0 0 0 2px var(--rosa), 0 12px 32px rgba(255, 119, 189, .35); }
-  .reel:hover img { transform: scale(1.04); }
-  .reel:hover .reel-play { background: var(--rosa); color: var(--tinta); border-color: transparent; transform: scale(1.08); }
+  .reel:hover video { transform: scale(1.04); }
+  .reel:hover .reel-titulo { opacity: 1; }
 }
 .reel:focus-within { box-shadow: 0 0 0 2px var(--rosa); }
-.reel a:focus-visible { outline-offset: -4px; }
+.reel:focus-within .reel-titulo { opacity: 1; }
+.reel-abrir:focus-visible { outline-offset: -4px; }
+
+/* el reel completo, en una ventana adentro de la pagina */
+.reelvisor {
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 12px;
+  background: radial-gradient(900px 520px at 50% 30%, rgba(236, 74, 168, .26), transparent 70%), rgba(9, 5, 10, .97);
+}
+.reelvisor[hidden] { display: none; }
+.reelvisor-marco {
+  position: relative; aspect-ratio: 9 / 16; border-radius: 10px; overflow: hidden; background: #000;
+  width: min(calc(100vw - 24px), calc((100vh - 24px) * .5625));
+  width: min(calc(100vw - 24px), calc((100dvh - 24px) * .5625));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .28), 0 0 60px rgba(236, 74, 168, .4), 0 20px 60px rgba(0, 0, 0, .6);
+}
+.reelvisor video { display: block; width: 100%; height: 100%; object-fit: contain; background: #000; }
+.reelvisor-top {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 10px 10px 30px;
+  background: linear-gradient(rgba(9, 5, 10, .85), transparent); pointer-events: none;
+}
+.reelvisor-top > * { pointer-events: auto; }
+.reelvisor-top #reelvisor-titulo {
+  flex: 1; min-width: 0; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font: 400 1rem/1.1 var(--etiqueta); letter-spacing: .05em; text-transform: uppercase;
+}
+.reelvisor-ig {
+  flex: none; padding: 7px 13px 6px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .5); background: rgba(9, 5, 10, .6);
+  color: #fff; text-decoration: none; font: 400 .95rem/1 var(--etiqueta); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+}
+.reelvisor-ig:hover { background: var(--rosa); color: var(--tinta); border-color: transparent; }
+.reelvisor .icono { flex: none; width: 40px; height: 40px; font-size: 1.5rem; }
+.reelvisor:not([hidden]) { animation: visor-fondo .3s ease-out; }
+.reelvisor:not([hidden]) .reelvisor-marco { animation: visor-foto .45s cubic-bezier(.2, .8, .2, 1); }
 .ver-todas {
   width: 100%; height: 100%; display: grid; place-content: center; gap: 8px; text-align: center; padding: 8px;
   border: 2px solid transparent; border-radius: 6px; color: #fff;
@@ -303,7 +324,7 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .visor-top { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px 0 22px; color: var(--suave); }
 .icono { width: 46px; height: 46px; border: 1px solid var(--linea); border-radius: 50%; background: var(--superficie-2); font-size: 1.7rem; line-height: 1; }
 .icono:hover { background: var(--rosa); color: var(--tinta); border-color: transparent; }
-.visor-foto { grid-column: 2; margin: 0; min-height: 0; display: grid; place-items: center; padding: 8px 0; }
+.visor-foto { grid-column: 2; margin: 0; min-height: 0; min-width: 0; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; padding: 8px 0; }   /* la pista fija evita que una foto vertical se pase del alto de la ventana */
 .visor-foto img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; background: var(--superficie); box-shadow: 0 0 0 1px rgba(255, 255, 255, .28), 0 0 60px rgba(236, 74, 168, .4), 0 20px 60px rgba(0, 0, 0, .6); }
 .flecha { align-self: center; justify-self: center; width: 46px; height: 66px; border: 0; background: none; font-size: 3.2rem; color: var(--suave); }
 .flecha:hover { color: var(--rosa); }
