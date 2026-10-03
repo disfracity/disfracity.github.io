@@ -6,25 +6,109 @@
       "slug": "primera",
       "nombre": "Primera edición",
       "anio": 2022,
-      "reel": "https://www.instagram.com/reel/CkVuW6PumZr/"
+      "reels": [
+        {
+          "codigo": "Cg4duDulXH8",
+          "titulo": "Primera edición · octubre"
+        },
+        {
+          "codigo": "ChKkZXsljcg",
+          "titulo": "Premios al mejor disfraz"
+        },
+        {
+          "codigo": "CiAxeHoMAsh",
+          "titulo": "Anticipadas a la venta"
+        },
+        {
+          "codigo": "CkVuW6PumZr",
+          "titulo": "Así fue la 1ª edición"
+        }
+      ]
     },
     {
       "slug": "segunda",
       "nombre": "Segunda edición",
       "anio": 2023,
-      "reel": "https://www.instagram.com/reel/CySDXf2rDlf/"
+      "reels": [
+        {
+          "codigo": "Cx1bxguxkD6",
+          "titulo": "Nos volvemos a disfrazar"
+        },
+        {
+          "codigo": "CySDXf2rDlf",
+          "titulo": "2ª edición · Federación se disfraza"
+        },
+        {
+          "codigo": "CyuDpA2RDXq",
+          "titulo": "Segunda tanda de anticipadas"
+        },
+        {
+          "codigo": "CzB9xvMRzUR",
+          "titulo": "DJ Briset en la 2ª edición"
+        },
+        {
+          "codigo": "CzcWRtOR8pd",
+          "titulo": "A 2 días de la fiesta"
+        }
+      ]
     },
     {
       "slug": "tercera",
       "nombre": "Tercera edición",
       "anio": 2024,
-      "reel": "https://www.instagram.com/reel/DQSqMk7kQC-/"
+      "reels": [
+        {
+          "codigo": "C_q7s8qx1Vx",
+          "titulo": "3ª edición · Nos vemos en noviembre"
+        },
+        {
+          "codigo": "DAO_NcRRBrs",
+          "titulo": "Noviembre en Federación"
+        },
+        {
+          "codigo": "DCiJ6xnRhVM",
+          "titulo": "Mirá lo que fue la 3ª edición"
+        },
+        {
+          "codigo": "DCo0y7IxV9k",
+          "titulo": "Ganadores de los premios"
+        },
+        {
+          "codigo": "DCuRXdVRzEx",
+          "titulo": "Gracias por la 3ª edición"
+        },
+        {
+          "codigo": "DQSqMk7kQC-",
+          "titulo": "After movie · Edición III"
+        }
+      ]
     },
     {
       "slug": "cuarta",
       "nombre": "Cuarta edición",
       "anio": 2025,
-      "reel": "https://www.instagram.com/reel/DP2KDE3kd57/"
+      "reels": [
+        {
+          "codigo": "DN_6m-mEXSh",
+          "titulo": "La fiesta de disfraces al aire libre"
+        },
+        {
+          "codigo": "DPpZR_OkYs3",
+          "titulo": "Preventa de anticipadas"
+        },
+        {
+          "codigo": "DP2KDE3kd57",
+          "titulo": "22 de noviembre · 4ª edición"
+        },
+        {
+          "codigo": "DQfg81OEf_V",
+          "titulo": "La previa con Capotte"
+        },
+        {
+          "codigo": "DQkWIzMj7Iq",
+          "titulo": "Loren Rattero · DJ invitado"
+        }
+      ]
     }
   ]
 }

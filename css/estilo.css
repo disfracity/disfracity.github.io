@@ -126,21 +126,9 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .anio-ver:hover, .volver:hover { color: #fff; }
 .volver { padding-left: 0; }
 
-/* boton al reel de Instagram de cada edicion */
-.anio-acc { display: flex; align-items: center; gap: 12px; flex: none; margin-left: auto; }
-.anio-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.anio-reel {
-  display: inline-flex; align-items: center; gap: 7px; padding: 8px 15px 7px; border-radius: 999px; white-space: nowrap; text-decoration: none;
-  border: 1.5px solid transparent; color: #fff; font: 400 1rem/1 var(--etiqueta); letter-spacing: .06em; text-transform: uppercase;
-  background: linear-gradient(var(--superficie), var(--superficie)) padding-box, var(--degradado) border-box;
-  transition: box-shadow .15s;
-}
-.anio-reel svg { color: var(--rosa); }
-.anio-reel:hover { box-shadow: 0 0 18px rgba(255, 119, 189, .45); }
-
 .tira-caja { position: relative; }
 .tira {
-  --alto-fila: clamp(140px, 17vw, 210px);
+  --alto-fila: clamp(190px, 25vw, 320px);
   list-style: none; margin: 0; padding: 8px 0 14px; display: flex; gap: 6px; overflow-x: auto;
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
@@ -149,6 +137,44 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .tira::-webkit-scrollbar { display: none; }
 .tira .foto { flex: 0 0 auto; }
 .tira .mas { flex: 0 0 auto; width: calc(var(--alto-fila) * 1.15); height: var(--alto-fila); }
+.tira.solo-reels { --alto-fila: clamp(210px, 23vw, 290px); }   /* tira de reels arriba de la pagina de una edicion */
+.solo-reels .reel-titulo { padding-top: 34px; font-size: .9rem; }
+
+/* reels de Instagram: pasan en la misma tira que las fotos, en vertical (9:16) */
+.reel {
+  position: relative; flex: 0 0 auto; width: calc(var(--alto-fila) * .5625); height: var(--alto-fila);
+  border-radius: 6px; overflow: hidden; background: var(--superficie); transition: transform .2s, box-shadow .2s;
+}
+.reel a {
+  position: absolute; inset: 0; display: block; color: #fff; text-decoration: none;
+  background: radial-gradient(120% 70% at 50% 0%, rgba(255, 119, 189, .38), transparent 70%), linear-gradient(170deg, #2b1023, #0e0710);
+}
+.reel a::before {   /* portada provisoria: la mascara del logo, de fondo */
+  content: ""; position: absolute; left: 20%; right: 20%; top: 12%; aspect-ratio: 1;
+  background: url(../img/logo-320.png) center / contain no-repeat; opacity: .2;
+}
+.reel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+.reel-play {
+  position: absolute; left: 50%; top: 45%; width: 56px; height: 56px; margin: -28px 0 0 -28px; display: grid; place-items: center;
+  border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, .75); background: rgba(9, 5, 10, .55);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); transition: background .2s, color .2s, transform .2s;
+}
+.reel-play svg { width: 26px; height: 26px; margin-left: 3px; }
+.reel-tag {
+  position: absolute; top: 9px; left: 9px; padding: 3px 9px 2px; border-radius: 4px;
+  background: var(--rosa); color: var(--tinta); font: 400 .85rem/1.1 var(--etiqueta); letter-spacing: .08em; text-transform: uppercase;
+}
+.reel-titulo {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 44px 11px 11px;
+  background: linear-gradient(transparent, rgba(9, 5, 10, .94)); font: 400 1rem/1.15 var(--etiqueta); letter-spacing: .05em; text-transform: uppercase;
+}
+@media (hover: hover) {
+  .reel:hover { transform: translateY(-3px); z-index: 2; box-shadow: 0 0 0 2px var(--rosa), 0 12px 32px rgba(255, 119, 189, .35); }
+  .reel:hover img { transform: scale(1.04); }
+  .reel:hover .reel-play { background: var(--rosa); color: var(--tinta); border-color: transparent; transform: scale(1.08); }
+}
+.reel:focus-within { box-shadow: 0 0 0 2px var(--rosa); }
+.reel a:focus-visible { outline-offset: -4px; }
 .ver-todas {
   width: 100%; height: 100%; display: grid; place-content: center; gap: 8px; text-align: center; padding: 8px;
   border: 2px solid transparent; border-radius: 6px; color: #fff;
@@ -306,8 +332,6 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
   .sugeridas { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
   .sugeridas::-webkit-scrollbar { display: none; }
   .sugeridas .chip, .sugeridas .rotulo { flex: none; }
-  .tanda-cab { flex-wrap: wrap; row-gap: 2px; }
-  .tanda-cab .anio-t { flex: 1 1 100%; }
   .visor { grid-template-columns: 0 1fr 0; }
   .flecha { display: none; }
   .visor-botones { width: 100%; }

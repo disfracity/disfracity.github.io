@@ -337,25 +337,41 @@ function tituloEd(ed, n) {
     `<span class="anio-c">${fmt(n)} ${n === 1 ? 'foto' : 'fotos'}</span></h2>`;
 }
 
-/** boton al reel de Instagram de la edicion (config.json > ediciones[].reel); si no hay link, no se muestra */
-function reelDe(ed) {
-  const info = edInfo.get(ed);
-  if (!info || !/^https:\/\/www\.instagram\.com\//.test(info.reel || '')) return '';
-  return `<a class="anio-reel" href="${esc(info.reel)}" target="_blank" rel="noopener noreferrer" aria-label="Ver el reel de la ${esc(info.nombre)} en Instagram">` +
-    '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg><span>Ver reel</span></a>';
+/** reels de Instagram de una edicion (config.json > ediciones[].reels), del mas viejo al mas nuevo */
+function reelsDe(ed) {
+  return (edInfo.get(ed)?.reels || []).filter(r => /^[\w-]{6,20}$/.test(r.codigo || ''));
 }
 
-/** una tanda de la pantalla principal: titulo del anio y tira horizontal con fotos de muestra */
+/** un reel es un mosaico mas de la tira; abre el reel en Instagram (Instagram no deja reproducirlo adentro de otra pagina) */
+function crearReel(r) {
+  const li = document.createElement('li');
+  li.className = 'reel';
+  li.innerHTML =
+    `<a href="https://www.instagram.com/reel/${esc(r.codigo)}/" target="_blank" rel="noopener noreferrer" aria-label="Ver el reel en Instagram: ${esc(r.titulo)}">` +
+    (r.portada ? `<img src="${esc(r.portada)}" alt="" loading="lazy" decoding="async">` : '') +
+    '<span class="reel-tag">Reel</span>' +
+    '<span class="reel-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span>' +
+    `<span class="reel-titulo">${esc(r.titulo)}</span></a>`;
+  return li;
+}
+
+/** una tanda de la pantalla principal: titulo del anio y tira horizontal con fotos de muestra y los reels de la edicion */
 function crearTanda(ed, total, mostradas) {
   const sec = document.createElement('section');
   sec.className = 'anio tanda';
   sec.innerHTML =
-    `<div class="tanda-cab">${tituloEd(ed, total)}<div class="anio-acc">${reelDe(ed)}<button type="button" class="anio-ver" data-ed="${esc(ed)}">Ver todas →</button></div></div>` +
+    `<div class="tanda-cab">${tituloEd(ed, total)}<button type="button" class="anio-ver" data-ed="${esc(ed)}">Ver todas →</button></div>` +
     `<div class="tira-caja"><button type="button" class="flecha-tira izq" aria-label="Fotos anteriores">‹</button>` +
     `<ul class="tira"></ul>` +
     `<button type="button" class="flecha-tira der" aria-label="Más fotos">›</button></div>`;
   const ul = $('.tira', sec);
-  for (const p of mostradas) ul.append(crearFoto(p));
+  const reels = reelsDe(ed);
+  let k = 0;   // los reels van repartidos entre las fotos, del mas viejo al mas nuevo
+  mostradas.forEach((p, i) => {
+    ul.append(crearFoto(p));
+    while (k < reels.length && i >= Math.floor((k + 0.5) * mostradas.length / reels.length)) ul.append(crearReel(reels[k++]));
+  });
+  while (k < reels.length) ul.append(crearReel(reels[k++]));
   const mas = document.createElement('li');
   mas.className = 'mas';
   mas.innerHTML = `<button type="button" class="ver-todas" data-ed="${esc(ed)}"><span>${total === 1 ? 'Ver la foto' : `Ver las ${fmt(total)} fotos`}</span><b aria-hidden="true">→</b></button>`;
@@ -363,11 +379,20 @@ function crearTanda(ed, total, mostradas) {
   return sec;
 }
 
-/** encabezado de la pagina de una edicion */
-function cabeceraAnio(ed, n) {
+/** encabezado de la pagina de una edicion, con una tira con sus reels (salvo al buscar adentro, para dejar lugar a las fotos) */
+function cabeceraAnio(ed, n, conReels = true) {
   const sec = document.createElement('section');
   sec.className = 'anio';
-  sec.innerHTML = `<div class="anio-nav"><button type="button" class="volver">← Todas las ediciones</button>${reelDe(ed)}</div>${tituloEd(ed, n)}`;
+  sec.innerHTML = `<button type="button" class="volver">← Todas las ediciones</button>${tituloEd(ed, n)}`;
+  const reels = conReels ? reelsDe(ed) : [];
+  if (reels.length) {
+    const caja = document.createElement('div');
+    caja.className = 'tira-caja';
+    caja.innerHTML = '<button type="button" class="flecha-tira izq" aria-label="Reels anteriores">‹</button>' +
+      '<ul class="tira solo-reels"></ul><button type="button" class="flecha-tira der" aria-label="Más reels">›</button>';
+    $('.tira', caja).append(...reels.map(crearReel));
+    sec.append(caja);
+  }
   return sec;
 }
 
@@ -493,7 +518,7 @@ function pintar(lista, relacionadas, hayConsulta) {
   vista = [];
   const frag = document.createDocumentFragment();
   if (edVista) {
-    frag.append(cabeceraAnio(edVista, lista.length));
+    frag.append(cabeceraAnio(edVista, lista.length, !hayConsulta));
     if (hayConsulta) frag.append(...bloquesResultado(lista, relacionadas, false));
     else frag.append(grillaNormal(lista));
   } else if (hayConsulta) {
