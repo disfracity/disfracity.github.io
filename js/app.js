@@ -337,9 +337,9 @@ function tituloEd(ed, n) {
     `<span class="anio-c">${fmt(n)} ${n === 1 ? 'foto' : 'fotos'}</span></h2>`;
 }
 
-/** reels de Instagram de una edicion (config.json > ediciones[].reels), del mas viejo al mas nuevo */
+/** reels de Instagram de una edicion (config.json > ediciones[].reels), del mas viejo al mas nuevo; solo los que tienen portada real */
 function reelsDe(ed) {
-  return (edInfo.get(ed)?.reels || []).filter(r => /^[\w-]{6,20}$/.test(r.codigo || ''));
+  return (edInfo.get(ed)?.reels || []).filter(r => /^[\w-]{6,20}$/.test(r.codigo || '') && r.portada);
 }
 
 /** un reel es un mosaico mas de la tira; abre el reel en Instagram (Instagram no deja reproducirlo adentro de otra pagina) */
