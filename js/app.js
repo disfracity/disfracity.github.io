@@ -309,7 +309,8 @@ function muestraDe(ed) {
   return salida;
 }
 
-function crearFoto(p, conAnio = false) {
+/** `grande`: foto de una tira, que se ve mas grande que una miniatura, asi que usa la version de 1800 px */
+function crearFoto(p, conAnio = false, grande = false) {
   const i = vista.length;
   vista.push(p);
   const li = document.createElement('li');
@@ -321,7 +322,7 @@ function crearFoto(p, conAnio = false) {
   li.dataset.id = p.id;
   li.style.setProperty('--r', (p.tw / p.th).toFixed(4));
   li.innerHTML =
-    `<img src="${esc(p.t)}" width="${p.tw}" height="${p.th}" loading="lazy" decoding="async" alt="${esc(altDe(p))}">` +
+    `<img src="${esc(grande ? p.w : p.t)}" width="${p.tw}" height="${p.th}" loading="lazy" decoding="async" alt="${esc(altDe(p))}">` +
     (rotuloDe(p) ? `<span class="etq">${esc(rotuloDe(p))}</span>` : '') +
     (anio ? `<span class="anio-chip">${esc(anio)}</span>` : '') +
     `<button type="button" class="sel" aria-pressed="${ok}" aria-label="Seleccionar foto">${ok ? '✓' : '+'}</button>` +
@@ -368,7 +369,7 @@ function crearTanda(ed, total, mostradas) {
   const reels = reelsDe(ed);
   let k = 0;   // los reels van repartidos entre las fotos, del mas viejo al mas nuevo
   mostradas.forEach((p, i) => {
-    ul.append(crearFoto(p));
+    ul.append(crearFoto(p, false, true));
     while (k < reels.length && i >= Math.floor((k + 0.5) * mostradas.length / reels.length)) ul.append(crearReel(reels[k++]));
   });
   while (k < reels.length) ul.append(crearReel(reels[k++]));

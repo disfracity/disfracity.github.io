@@ -128,7 +128,7 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 
 .tira-caja { position: relative; }
 .tira {
-  --alto-fila: clamp(190px, 25vw, 320px);
+  --alto-fila: clamp(250px, 40vw, 480px);
   list-style: none; margin: 0; padding: 8px 0 14px; display: flex; gap: 6px; overflow-x: auto;
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
