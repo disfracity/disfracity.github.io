@@ -452,7 +452,7 @@ function bucleTiras(t) {
   tUltimo = t;
   const visorAbierto = !el.visor.hidden || !el.reelVisor.hidden;
   for (const s of tirasAuto) {
-    const quieta = s.cerca || s.tocando || s.enfoque || !s.visible || visorAbierto || t < s.pausa;
+    const quieta = s.tocando || !s.visible || visorAbierto || t < s.pausa;
     s.corriendo = !quieta;
     if (quieta) { s.pos = s.ul.scrollLeft; continue; }
     s.pos += s.dir * s.velocidad * dt;
@@ -480,18 +480,15 @@ function activarTiras() {
     const ciclo = ul.children[unidad.length].offsetLeft - ul.children[0].offsetLeft;
     const s = {
       caja, ul, ciclo, dir: k % 2 ? -1 : 1, velocidad: VELOCIDAD + (k % 3) * 4, pos: 0,
-      visible: true, cerca: false, tocando: false, enfoque: false, pausa: 0, corriendo: false,
+      visible: true, tocando: false, pausa: 0, corriendo: false,
     };
     if (s.dir < 0) ul.scrollLeft = ciclo - 1;   // las que van hacia el otro lado arrancan al final del ciclo
     s.pos = ul.scrollLeft;
     const demora = () => { s.pausa = performance.now() + 3000; };
-    caja.addEventListener('mouseenter', () => { s.cerca = true; });
-    caja.addEventListener('mouseleave', () => { s.cerca = false; });
     caja.addEventListener('touchstart', () => { s.tocando = true; }, { passive: true });
     caja.addEventListener('touchend', () => { s.tocando = false; demora(); }, { passive: true });
     caja.addEventListener('touchcancel', () => { s.tocando = false; demora(); }, { passive: true });
-    caja.addEventListener('focusin', () => { s.enfoque = true; });
-    caja.addEventListener('focusout', () => { s.enfoque = false; });
+    caja.addEventListener('focusin', demora);   // con el teclado espera un rato; al cerrar una foto el foco vuelve a ella y la tira no se queda frenada
     caja.addEventListener('click', e => { if (e.target.closest('.flecha-tira')) s.pausa = performance.now() + 3500; });
     ul.addEventListener('wheel', demora, { passive: true });
     ul.addEventListener('scroll', () => {   // movida a mano: se mantiene dentro del ciclo
