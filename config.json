@@ -8,32 +8,13 @@
       "anio": 2022,
       "reels": [
         {
-          "codigo": "Cg4duDulXH8",
-          "titulo": "Primera edición · octubre",
-          "portada": "reels/Cg4duDulXH8.jpg",
-          "preview": "reels/Cg4duDulXH8_p.mp4",
-          "video": "reels/Cg4duDulXH8.mp4"
-        },
-        {
-          "codigo": "ChKkZXsljcg",
-          "titulo": "Premios al mejor disfraz",
-          "portada": "reels/ChKkZXsljcg.jpg",
-          "preview": "reels/ChKkZXsljcg_p.mp4",
-          "video": "reels/ChKkZXsljcg.mp4"
-        },
-        {
-          "codigo": "CiAxeHoMAsh",
-          "titulo": "Anticipadas a la venta",
-          "portada": "reels/CiAxeHoMAsh.jpg",
-          "preview": "reels/CiAxeHoMAsh_p.mp4",
-          "video": "reels/CiAxeHoMAsh.mp4"
-        },
-        {
           "codigo": "CkVuW6PumZr",
           "titulo": "Así fue la 1ª edición",
           "portada": "reels/CkVuW6PumZr.jpg",
           "preview": "reels/CkVuW6PumZr_p.mp4",
-          "video": "reels/CkVuW6PumZr.mp4"
+          "video": "reels/CkVuW6PumZr.mp4",
+          "ancho": 720,
+          "alto": 1280
         }
       ]
     },
@@ -47,35 +28,18 @@
           "titulo": "Nos volvemos a disfrazar",
           "portada": "reels/Cx1bxguxkD6.jpg",
           "preview": "reels/Cx1bxguxkD6_p.mp4",
-          "video": "reels/Cx1bxguxkD6.mp4"
-        },
-        {
-          "codigo": "CySDXf2rDlf",
-          "titulo": "2ª edición · Federación se disfraza",
-          "portada": "reels/CySDXf2rDlf.jpg",
-          "preview": "reels/CySDXf2rDlf_p.mp4",
-          "video": "reels/CySDXf2rDlf.mp4"
-        },
-        {
-          "codigo": "CyuDpA2RDXq",
-          "titulo": "Segunda tanda de anticipadas",
-          "portada": "reels/CyuDpA2RDXq.jpg",
-          "preview": "reels/CyuDpA2RDXq_p.mp4",
-          "video": "reels/CyuDpA2RDXq.mp4"
+          "video": "reels/Cx1bxguxkD6.mp4",
+          "ancho": 720,
+          "alto": 1280
         },
         {
           "codigo": "CzB9xvMRzUR",
           "titulo": "DJ Briset en la 2ª edición",
           "portada": "reels/CzB9xvMRzUR.jpg",
           "preview": "reels/CzB9xvMRzUR_p.mp4",
-          "video": "reels/CzB9xvMRzUR.mp4"
-        },
-        {
-          "codigo": "CzcWRtOR8pd",
-          "titulo": "A 2 días de la fiesta",
-          "portada": "reels/CzcWRtOR8pd.jpg",
-          "preview": "reels/CzcWRtOR8pd_p.mp4",
-          "video": "reels/CzcWRtOR8pd.mp4"
+          "video": "reels/CzB9xvMRzUR.mp4",
+          "ancho": 720,
+          "alto": 1280
         }
       ]
     },
@@ -85,46 +49,43 @@
       "anio": 2024,
       "reels": [
         {
-          "codigo": "C_q7s8qx1Vx",
-          "titulo": "3ª edición · Nos vemos en noviembre",
-          "portada": "reels/C_q7s8qx1Vx.jpg",
-          "preview": "reels/C_q7s8qx1Vx_p.mp4",
-          "video": "reels/C_q7s8qx1Vx.mp4"
-        },
-        {
-          "codigo": "DAO_NcRRBrs",
-          "titulo": "Noviembre en Federación",
-          "portada": "reels/DAO_NcRRBrs.jpg",
-          "preview": "reels/DAO_NcRRBrs_p.mp4",
-          "video": "reels/DAO_NcRRBrs.mp4"
-        },
-        {
           "codigo": "DCiJ6xnRhVM",
           "titulo": "Mirá lo que fue la 3ª edición",
           "portada": "reels/DCiJ6xnRhVM.jpg",
           "preview": "reels/DCiJ6xnRhVM_p.mp4",
-          "video": "reels/DCiJ6xnRhVM.mp4"
+          "video": "reels/DCiJ6xnRhVM.mp4",
+          "ancho": 716,
+          "alto": 1274
         },
         {
           "codigo": "DCo0y7IxV9k",
           "titulo": "Ganadores de los premios",
           "portada": "reels/DCo0y7IxV9k.jpg",
           "preview": "reels/DCo0y7IxV9k_p.mp4",
-          "video": "reels/DCo0y7IxV9k.mp4"
+          "video": "reels/DCo0y7IxV9k.mp4",
+          "ancho": 716,
+          "alto": 1274
         },
         {
           "codigo": "DCuRXdVRzEx",
           "titulo": "Gracias por la 3ª edición",
           "portada": "reels/DCuRXdVRzEx.jpg",
           "preview": "reels/DCuRXdVRzEx_p.mp4",
-          "video": "reels/DCuRXdVRzEx.mp4"
+          "video": "reels/DCuRXdVRzEx.mp4",
+          "ancho": 716,
+          "alto": 1274
         },
         {
           "codigo": "DQSqMk7kQC-",
           "titulo": "After movie · Edición III",
+          "inicio": 4.1,
+          "rotar": -90,
+          "vista": 12,
           "portada": "reels/DQSqMk7kQC-.jpg",
           "preview": "reels/DQSqMk7kQC-_p.mp4",
-          "video": "reels/DQSqMk7kQC-.mp4"
+          "video": "reels/DQSqMk7kQC-.mp4",
+          "ancho": 1274,
+          "alto": 716
         }
       ]
     },
@@ -138,35 +99,9 @@
           "titulo": "La fiesta de disfraces al aire libre",
           "portada": "reels/DN_6m-mEXSh.jpg",
           "preview": "reels/DN_6m-mEXSh_p.mp4",
-          "video": "reels/DN_6m-mEXSh.mp4"
-        },
-        {
-          "codigo": "DPpZR_OkYs3",
-          "titulo": "Preventa de anticipadas",
-          "portada": "reels/DPpZR_OkYs3.jpg",
-          "preview": "reels/DPpZR_OkYs3_p.mp4",
-          "video": "reels/DPpZR_OkYs3.mp4"
-        },
-        {
-          "codigo": "DP2KDE3kd57",
-          "titulo": "22 de noviembre · 4ª edición",
-          "portada": "reels/DP2KDE3kd57.jpg",
-          "preview": "reels/DP2KDE3kd57_p.mp4",
-          "video": "reels/DP2KDE3kd57.mp4"
-        },
-        {
-          "codigo": "DQfg81OEf_V",
-          "titulo": "La previa con Capotte",
-          "portada": "reels/DQfg81OEf_V.jpg",
-          "preview": "reels/DQfg81OEf_V_p.mp4",
-          "video": "reels/DQfg81OEf_V.mp4"
-        },
-        {
-          "codigo": "DQkWIzMj7Iq",
-          "titulo": "Loren Rattero · DJ invitado",
-          "portada": "reels/DQkWIzMj7Iq.jpg",
-          "preview": "reels/DQkWIzMj7Iq_p.mp4",
-          "video": "reels/DQkWIzMj7Iq.mp4"
+          "video": "reels/DN_6m-mEXSh.mp4",
+          "ancho": 716,
+          "alto": 1274
         }
       ]
     }

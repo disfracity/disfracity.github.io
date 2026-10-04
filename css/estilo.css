@@ -145,6 +145,7 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
   position: relative; flex: 0 0 auto; width: calc(var(--alto-reel, var(--alto-fila)) * .5625); height: var(--alto-reel, var(--alto-fila));
   border-radius: 6px; overflow: hidden; background: #000; transition: transform .2s, box-shadow .2s;
 }
+.reel.horizontal { width: calc(var(--alto-fila) * 1.7778); height: var(--alto-fila); }   /* los grabados de costado: del alto de una foto y en 16:9 */
 .reel-abrir {
   position: absolute; inset: 0; width: 100%; padding: 0; border: 0; background: none; color: #fff; text-align: left; cursor: pointer;
 }
@@ -178,9 +179,15 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
   width: min(calc(100vw - 16px), calc((100dvh - 16px) * .5625));
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .28), 0 0 60px rgba(236, 74, 168, .4), 0 20px 60px rgba(0, 0, 0, .6);
 }
+.reelvisor-marco.horizontal {
+  aspect-ratio: 16 / 9;
+  width: min(calc(100vw - 16px), calc((100vh - 16px) * 1.7778));
+  width: min(calc(100vw - 16px), calc((100dvh - 16px) * 1.7778));
+}
 @media (max-width: 520px) {   /* en el celular el reel ocupa todo el ancho */
   .reelvisor { padding: 0; }
   .reelvisor-marco { width: min(100vw, calc(100vh * .5625)); width: min(100vw, calc(100dvh * .5625)); border-radius: 0; box-shadow: none; }
+  .reelvisor-marco.horizontal { width: 100vw; }
 }
 .reelvisor video { display: block; width: 100%; height: 100%; object-fit: contain; background: #000; }
 .reelvisor-top {

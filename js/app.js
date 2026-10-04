@@ -60,7 +60,7 @@ const el = {
   visorSel: $('#visor-sel'), visorDl: $('#visor-dl'), visorCerrar: $('#visor-cerrar'),
   visorAnt: $('#visor-ant'), visorSig: $('#visor-sig'),
   reelVisor: $('#reelvisor'), reelVideo: $('#reelvisor-video'), reelTitulo: $('#reelvisor-titulo'),
-  reelIg: $('#reelvisor-ig'), reelCerrar: $('#reelvisor-cerrar'),
+  reelIg: $('#reelvisor-ig'), reelCerrar: $('#reelvisor-cerrar'), reelMarco: $('#reelvisor .reelvisor-marco'),
 };
 
 const MAX_ZIP = 150;
@@ -348,7 +348,7 @@ function reelsDe(ed) {
 /** un reel es un mosaico mas de la tira: su vista corta (sin sonido) se reproduce sola mientras se ve; al tocarlo se abre completo */
 function crearReel(r) {
   const li = document.createElement('li');
-  li.className = 'reel';
+  li.className = r.ancho > r.alto ? 'reel horizontal' : 'reel';   // los que se grabaron de costado se ven horizontales (ancho y alto los escribe reels.py)
   li.innerHTML =
     `<button type="button" class="reel-abrir" data-reel="${esc(r.codigo)}" aria-label="Ver el reel: ${esc(r.titulo)}">` +
     `<video muted loop playsinline preload="none" poster="${esc(r.portada)}"${r.preview ? ` data-src="${esc(r.preview)}"` : ''} aria-hidden="true" tabindex="-1"></video>` +
@@ -546,6 +546,7 @@ function abrirReel(codigo, origen) {
   reelOrigen = origen;
   el.reelTitulo.textContent = `${ed.nombre} · ${r.titulo}`;
   el.reelIg.href = `https://www.instagram.com/reel/${r.codigo}/`;
+  el.reelMarco.classList.toggle('horizontal', r.ancho > r.alto);
   el.reelVideo.poster = r.portada;
   el.reelVideo.src = r.video;
   el.grilla.querySelectorAll('.reel video').forEach(v => v.pause());
