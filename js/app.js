@@ -270,14 +270,8 @@ function altDe(p) {
   return `Foto de ${nombreEd.get(p.ed) || p.ed}` + (claves.length ? ': ' + claves.join(', ') : '');
 }
 
-/** rotulo de la miniatura: personaje o disfraz concreto mas probable (nunca los genericos) */
+/** disfraces genericos: no sirven para elegir las fotos de muestra de cada tanda */
 const GENERICAS = new Set(['sin disfraz', 'disfraz grupal', 'pareja disfrazada']);
-function rotuloDe(p) {
-  const peso = t => t[2] + (t[1] === 'personaje' ? 1 : 0);
-  const t = p.tags.filter(x => (x[1] === 'personaje' || x[1] === 'disfraz') && !GENERICAS.has(x[0]))
-    .sort((a, b) => peso(b) - peso(a))[0];
-  return t ? t[0] : '';
-}
 
 const MUESTRA = 20;     // fotos de muestra por edicion cuando no se busca nada
 const MAX_REL = 60;     // fotos relacionadas que se suman a los resultados de una busqueda
@@ -325,7 +319,6 @@ function crearFoto(p, conAnio = false, grande = false) {
   li.style.setProperty('--r', (p.tw / p.th).toFixed(4));
   li.innerHTML =
     `<img src="${esc(grande ? p.w : p.t)}" width="${p.tw}" height="${p.th}" loading="lazy" decoding="async" alt="${esc(altDe(p))}">` +
-    (rotuloDe(p) ? `<span class="etq">${esc(rotuloDe(p))}</span>` : '') +
     (anio ? `<span class="anio-chip">${esc(anio)}</span>` : '') +
     `<button type="button" class="sel" aria-pressed="${ok}" aria-label="Seleccionar foto">${ok ? '✓' : '+'}</button>` +
     `<a class="bajar" href="${esc(p.w)}" download="Disfracity-${esc(p.id)}.jpg" aria-label="Descargar foto">↓</a>`;

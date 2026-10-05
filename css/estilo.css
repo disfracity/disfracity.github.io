@@ -247,23 +247,11 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
   transition: transform .2s, box-shadow .2s;
 }
 .foto::before { content: ""; display: block; padding-bottom: calc(100% / var(--r)); }
-.foto::after {
-  content: ""; position: absolute; inset: auto 0 0 0; height: 45%; pointer-events: none; opacity: 0; transition: opacity .2s;
-  background: linear-gradient(transparent, rgba(9, 5, 10, .9));
-}
 .foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
-.etq {
-  position: absolute; left: 10px; bottom: 9px; z-index: 1; max-width: calc(100% - 20px);
-  padding: 3px 11px 2px; border-radius: 4px; font: 400 .9rem/1.15 var(--etiqueta); letter-spacing: .05em; text-transform: uppercase;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  background: var(--rosa); color: var(--tinta); opacity: 0; transform: translateY(4px); transition: opacity .2s, transform .2s;
-}
 @media (hover: hover) {
   .foto:hover { transform: translateY(-3px); z-index: 2; box-shadow: 0 0 0 2px var(--rosa), 0 12px 32px rgba(255, 119, 189, .35); }
   .foto:hover img { transform: scale(1.04); }
-  .foto:hover::after, .foto:hover .etq { opacity: 1; transform: none; }
 }
-.foto:focus-within::after, .foto:focus-within .etq { opacity: 1; transform: none; }
 .foto .sel, .foto .bajar {
   position: absolute; top: 9px; z-index: 1; width: 36px; height: 36px; display: grid; place-items: center;
   border-radius: 50%; border: 1px solid rgba(255, 255, 255, .3);
@@ -277,7 +265,7 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .foto.elegida { box-shadow: 0 0 0 3px #fff, 0 0 28px rgba(255, 119, 189, .65); }
 .foto.elegida .sel { opacity: 1; background: var(--rosa); color: var(--tinta); font-weight: 700; border-color: transparent; }
 @media (hover: none) {
-  .foto .sel, .foto .bajar, .etq, .foto::after { opacity: 1; transform: none; }
+  .foto .sel, .foto .bajar { opacity: 1; transform: none; }
   :root { --alto-fila: 150px; }
 }
 
