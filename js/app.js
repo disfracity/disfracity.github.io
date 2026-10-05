@@ -606,7 +606,7 @@ function textoResumen(r, interp, calc) {
     return `<span class="entendi">${esc(igual ? mejorTag : `${c.etiqueta} → ${mejorTag}`)}</span>`;
   });
   if (entendidos.length) partes.push('buscando: ' + entendidos.join(' + '));
-  if (total && rel) partes.push(`y ${fmt(rel)} relacionadas`);
+  if (total && rel) partes.push(`y ${fmt(rel)} ${rel === 1 ? 'relacionada' : 'relacionadas'}`);
   const eds = edVista ? [] : [...interp.eds];
   if (eds.length) partes.push('en ' + eds.map(e => esc(nombreEd.get(e) || e)).join(' y '));
   else if (!interp.conceptos.length && !edVista) partes.push(`en ${CONF.ediciones.length} ediciones`);
