@@ -382,16 +382,22 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 
 /* ---------- celular: cada edicion ocupa casi toda la pantalla y el scroll salta de una a la otra ----------
    app.js mide la barra pegajosa (--alto-barra) y el encabezado de una tanda (--alto-cab); las fotos y los reels de la tira se hacen del alto
-   que queda. 100svh es el alto de la pantalla con las barras de Safari a la vista, asi que nunca se pasa. */
+   que queda. Se mide con 100lvh, el alto de la pantalla con las barras de Safari ya escondidas (como se la ve casi siempre al deslizar):
+   con 100svh (barras a la vista) sobraban unos 90 px abajo y asomaba el encabezado de la edicion siguiente. lvh no cambia mientras se desliza,
+   asi que nada se mueve ni se reacomoda. Con las barras a la vista, lo ultimo de cada foto queda tapado por la barra de Safari un momento. */
 :root { --alto-barra: 75px; --alto-cab: 84px; }   /* valores de antes de medir */
-@supports (height: 100svh) {
+@supports (height: 100lvh) {
   @media (max-width: 640px) {
-    .tanda { display: flex; flex-direction: column; min-height: calc(100svh - var(--alto-barra)); padding-top: 14px; }
+    .tanda { display: flex; flex-direction: column; min-height: calc(100lvh - var(--alto-barra)); padding-top: 14px; }
     .tanda .tira-caja { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-    .tanda .tira { --alto-fila: calc(100svh - var(--alto-barra) - var(--alto-cab) - 46px); --proporcion-reel: .5625; }
-    /* una foto horizontal no puede ser mas ancha que la pantalla: se achica para que se vea entera y queda centrada en el alto de la tira */
-    .tanda .tira .foto { width: min(calc(var(--r) * var(--alto-fila)), calc(100vw - 28px)); }
-    .tanda .reel.horizontal { width: calc(100vw - 28px); height: auto; aspect-ratio: 16 / 9; }
+    .tanda .tira { --alto-fila: calc(100lvh - var(--alto-barra) - var(--alto-cab) - 46px); --proporcion-reel: .5625; }
+    /* todas las fotos de la tira miden lo mismo de alto. Una horizontal no puede ser mas ancha que la pantalla: se ve entera y lo que sobra
+       arriba y abajo se rellena con su misma miniatura oscurecida (como las historias de Instagram), asi no queda un hueco vacio */
+    .tanda .tira .foto { width: min(calc(var(--r) * var(--alto-fila)), calc(100vw - 28px)); height: var(--alto-fila); background-color: #5a4953; background-blend-mode: multiply; }
+    .tanda .tira .foto::before { display: none; }
+    .tanda .tira .foto img { object-fit: contain; }
+    .tanda .reel.horizontal { width: calc(100vw - 28px); height: var(--alto-reel); background-size: cover; background-position: center; background-color: #5a4953; background-blend-mode: multiply; }
+    .tanda .reel.horizontal video { object-fit: contain; }
     .tira.solo-reels { --alto-reel: min(calc(100svh - var(--alto-barra) - 170px), 560px); }
     /* encabezado de la tanda: el anio arriba, la edicion y la cantidad abajo, y el boton a la derecha */
     .tanda-cab { gap: 10px; margin-bottom: 8px; padding-bottom: 10px; }

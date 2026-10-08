@@ -349,7 +349,9 @@ function reelsDe(ed) {
 /** un reel es un mosaico mas de la tira: su vista corta (sin sonido) se reproduce sola mientras se ve; al tocarlo se abre completo */
 function crearReel(r) {
   const li = document.createElement('li');
-  li.className = r.ancho > r.alto ? 'reel horizontal' : 'reel';   // los que se grabaron de costado se ven horizontales (ancho y alto los escribe reels.py)
+  const horizontal = r.ancho > r.alto;   // los que se grabaron de costado se ven horizontales (ancho y alto los escribe reels.py)
+  li.className = horizontal ? 'reel horizontal' : 'reel';
+  if (horizontal) li.style.backgroundImage = `url("${r.portada}")`;   // en el celular rellena lo que sobra arriba y abajo del video (ver estilo.css)
   li.innerHTML =
     `<button type="button" class="reel-abrir" data-reel="${esc(r.codigo)}" aria-label="Ver el reel: ${esc(r.titulo)}">` +
     `<video muted loop playsinline preload="none" poster="${esc(r.portada)}"${r.preview ? ` data-src="${esc(r.preview)}"` : ''} aria-hidden="true" tabindex="-1"></video>` +
