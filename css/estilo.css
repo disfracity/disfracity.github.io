@@ -382,36 +382,46 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 
 /* ---------- celular: cada edicion ocupa casi toda la pantalla y el scroll salta de una a la otra ----------
    app.js mide la barra pegajosa (--alto-barra) y el encabezado de una tanda (--alto-cab); las fotos y los reels de la tira se hacen del alto
-   que queda. Se mide con 100lvh, el alto de la pantalla con las barras de Safari ya escondidas (como se la ve casi siempre al deslizar):
-   con 100svh (barras a la vista) sobraban unos 90 px abajo y asomaba el encabezado de la edicion siguiente. lvh no cambia mientras se desliza,
-   asi que nada se mueve ni se reacomoda. Con las barras a la vista, lo ultimo de cada foto queda tapado por la barra de Safari un momento. */
+   que queda. Se mide con 100lvh, el alto de la pantalla con las barras del navegador ya escondidas (como se la ve casi siempre al deslizar, en
+   Safari de iPhone y en Chrome de Android): con 100svh (barras a la vista) sobraban unos 90 px abajo y asomaba el encabezado de la edicion
+   siguiente. lvh no cambia mientras se desliza, asi que nada se reacomoda. Con las barras a la vista, lo ultimo de cada foto queda tapado un
+   momento por la barra del navegador. Los navegadores sin lvh (iOS anterior a 15.4, Chrome anterior al 108) usan 100vh, que en ellos vale lo mismo. */
 :root { --alto-barra: 75px; --alto-cab: 84px; }   /* valores de antes de medir */
-@supports (height: 100lvh) {
-  @media (max-width: 640px) {
-    .tanda { display: flex; flex-direction: column; min-height: calc(100lvh - var(--alto-barra)); padding-top: 14px; }
-    .tanda .tira-caja { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
-    .tanda .tira { --alto-fila: calc(100lvh - var(--alto-barra) - var(--alto-cab) - 46px); --proporcion-reel: .5625; }
-    /* todas las fotos de la tira miden lo mismo de alto. Una horizontal no puede ser mas ancha que la pantalla: se ve entera y lo que sobra
-       arriba y abajo se rellena con su misma miniatura oscurecida (como las historias de Instagram), asi no queda un hueco vacio */
-    .tanda .tira .foto { width: min(calc(var(--r) * var(--alto-fila)), calc(100vw - 28px)); height: var(--alto-fila); background-color: #5a4953; background-blend-mode: multiply; }
-    .tanda .tira .foto::before { display: none; }
-    .tanda .tira .foto img { object-fit: contain; }
-    .tanda .reel.horizontal { width: calc(100vw - 28px); height: var(--alto-reel); background-size: cover; background-position: center; background-color: #5a4953; background-blend-mode: multiply; }
-    .tanda .reel.horizontal video { object-fit: contain; }
-    .tira.solo-reels { --alto-reel: min(calc(100svh - var(--alto-barra) - 170px), 560px); }
-    /* encabezado de la tanda: el anio arriba, la edicion y la cantidad abajo, y el boton a la derecha */
-    .tanda-cab { gap: 10px; margin-bottom: 8px; padding-bottom: 10px; }
-    .tanda-cab .anio-t { flex: 1 1 auto; min-width: 0; gap: 4px 10px; }
-    .tanda-cab .anio-n { flex: 0 0 100%; font-size: 2.1rem; }
-    .tanda-cab .anio-e { font-size: 1rem; }
-    .tanda-cab .anio-c { margin-left: 0; font-size: .9rem; }
-    .anio-ver { padding: 10px 16px 9px 18px; font-size: 1.15rem; gap: 7px; }
-    /* el scroll vertical salta de una edicion a la otra (solo en la pantalla principal: app.js pone la clase `saltos`) */
-    html.saltos { scroll-snap-type: y mandatory; scroll-padding-top: var(--alto-barra); }
-    html.saltos .hero { scroll-snap-align: start; }
-    html.saltos .tanda { scroll-snap-align: start; scroll-snap-stop: always; }
-    html.saltos .pie { scroll-snap-align: end; }
+
+/* celular, en cualquier posicion: encabezado compacto de cada edicion */
+@media (max-width: 640px) {
+  .tanda-cab { gap: 10px; margin-bottom: 8px; padding-bottom: 10px; }
+  .tanda-cab .anio-t { flex: 1 1 auto; min-width: 0; gap: 4px 10px; }
+  .tanda-cab .anio-n { flex: 0 0 100%; font-size: 2.1rem; }
+  .tanda-cab .anio-e { font-size: 1rem; }
+  .tanda-cab .anio-c { margin-left: 0; font-size: .9rem; }
+  .anio-ver { padding: 10px 16px 9px 18px; font-size: 1.15rem; gap: 7px; }
+  .tira.solo-reels { --alto-reel: min(calc(100vh - var(--alto-barra) - 170px), 560px); }   /* fila de reels de la pagina de una edicion */
+}
+
+/* celular en vertical y con alto suficiente (un celular acostado o una ventana muy baja usan las tiras de siempre) */
+@media (max-width: 640px) and (orientation: portrait) and (min-height: 480px) {
+  .tanda { display: flex; flex-direction: column; min-height: calc(100vh - var(--alto-barra)); padding-top: 14px; }
+  .tanda .tira-caja { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+  .tanda .tira { --alto-fila: max(220px, calc(100vh - var(--alto-barra) - var(--alto-cab) - 46px)); --proporcion-reel: .5625; }
+  @supports (height: 100lvh) {
+    .tanda { min-height: calc(100lvh - var(--alto-barra)); }
+    .tanda .tira { --alto-fila: max(220px, calc(100lvh - var(--alto-barra) - var(--alto-cab) - 46px)); }
   }
+  /* todas las fotos de la tira miden lo mismo de alto. Una horizontal no puede ser mas ancha que la pantalla: se ve entera y lo que sobra
+     arriba y abajo se rellena con su misma miniatura oscurecida (como las historias de Instagram), asi no queda un hueco vacio.
+     Lo mismo en un celular muy alto: una foto vertical tampoco pasa del ancho de la pantalla */
+  .tanda .tira .foto { width: min(calc(var(--r) * var(--alto-fila)), calc(100vw - 28px)); height: var(--alto-fila); background-color: #5a4953; background-blend-mode: multiply; }
+  .tanda .tira .foto::before { display: none; }
+  .tanda .tira .foto img { object-fit: contain; }
+  .tanda .reel { width: min(calc(var(--alto-reel) * var(--proporcion-reel)), calc(100vw - 28px)); }
+  .tanda .reel.horizontal { width: calc(100vw - 28px); height: var(--alto-reel); background-size: cover; background-position: center; background-color: #5a4953; background-blend-mode: multiply; }
+  .tanda .reel.horizontal video { object-fit: contain; }
+  /* el scroll vertical salta de una edicion a la otra (solo en la pantalla principal: app.js pone la clase `saltos`) */
+  html.saltos { scroll-snap-type: y mandatory; scroll-padding-top: var(--alto-barra); }
+  html.saltos .hero { scroll-snap-align: start; }
+  html.saltos .tanda { scroll-snap-align: start; scroll-snap-stop: always; }
+  html.saltos .pie { scroll-snap-align: end; }
 }
 
 @media (prefers-reduced-motion: reduce) {
