@@ -420,11 +420,13 @@ function bloquesResultado(exactas, relacionadas, conAnio) {
 }
 
 /* ---------- tiras en movimiento ----------
-   Cada tira avanza sola, una hacia cada lado, como fotos que van pasando. No se frena nunca por el mouse, el foco, la rueda ni el teclado
+   Cada tira avanza sola, una hacia cada lado, como fotos que van pasando. No se frena por el mouse, el foco, la rueda ni el teclado
    (el usuario no quiere pausas): solo cede mientras se la mueve a mano (flechas, rueda horizontal, dedo) o esta abierto el visor, y sigue
-   desde donde la dejaron. Para que el giro no tenga corte se agrega una copia de las fotos al final de la tira. */
+   desde donde la dejaron. La unica pausa que si quiere: cuando un reel llega al medio de la tira se frena unos 3 segundos, bien centrado,
+   para que se vea. Para que el giro no tenga corte se agrega una copia de las fotos al final de la tira. */
 const VELOCIDAD = 46;   // px por segundo
 const CEDE_MS = 140;    // despues de mover la tira a mano espera este rato sin movimiento antes de seguir (no corta el impulso del dedo)
+const PAUSA_REEL_MS = 3000;   // el reel que pasa por el medio de la tira se queda quieto este rato
 const movimientoReducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let tirasAuto = [];
 let rafTiras = 0, tUltimo = 0;
@@ -453,9 +455,15 @@ function bucleTiras(t) {
   for (const s of tirasAuto) s.x = s.ul.scrollLeft;
   for (const s of tirasAuto) {
     if (Math.abs(s.x - s.escrito) > 1.5) s.cedeHasta = t + CEDE_MS;   // la movieron a mano (flechas, rueda, dedo): sigue desde ahi
-    s.mover = !(s.tocando || !s.visible || visorAbierto || t < s.cedeHasta);
+    s.mover = !(s.tocando || !s.visible || visorAbierto || t < s.cedeHasta || t < s.pausaReel);
     if (!s.mover) { s.pos = s.escrito = s.x; continue; }
-    s.pos += s.dir * s.velocidad * dt;
+    let sig = s.pos + s.dir * s.velocidad * dt;
+    // si en este paso el medio de la tira pasa por el medio de un reel, la tira se queda justo ahi (reel centrado) y espera;
+    // los centros incluyen las copias de las fotos, asi que tambien vale al dar la vuelta
+    const desde = s.pos + s.mitad, hasta = sig + s.mitad;
+    const centro = s.centros.find(c => (s.dir > 0 ? c > desde && c <= hasta : c < desde && c >= hasta));
+    if (centro !== undefined) { sig = centro - s.mitad; s.pausaReel = t + PAUSA_REEL_MS; }
+    s.pos = sig;
     if (s.pos >= s.ciclo) s.pos -= s.ciclo; else if (s.pos < 0) s.pos += s.ciclo;
     s.escrito = s.pos;   // lo que se escribe: el navegador lo redondea a lo mas medio pixel, y lo que se aparte de mas lo movio otra cosa
   }
@@ -501,6 +509,16 @@ function medirFijos() {
   if (barra) raiz.setProperty('--alto-barra', barra.offsetHeight + 'px');
   const cab = $('.tanda-cab');
   if (cab) raiz.setProperty('--alto-cab', Math.round(cab.offsetHeight + (parseFloat(getComputedStyle(cab).marginBottom) || 0)) + 'px');
+  for (const s of tirasAuto) remedir(s);   // las fotos y los reels cambian de ancho con esas alturas
+}
+
+/** largo de una vuelta de la tira (lo que mide una copia de las fotos) y medio de cada reel, en coordenadas del contenido de la tira */
+function remedir(s) {
+  const hijos = s.ul.children;
+  s.ciclo = hijos[s.unidades].offsetLeft - hijos[0].offsetLeft;
+  s.mitad = s.ul.clientWidth / 2;
+  const origen = s.ul.getBoundingClientRect().left - s.ul.scrollLeft;   // donde queda el comienzo del contenido de la tira
+  s.centros = [...s.ul.querySelectorAll('.reel')].map(r => { const b = r.getBoundingClientRect(); return b.left - origen + b.width / 2; });
 }
 const medidor = 'ResizeObserver' in window ? new ResizeObserver(medirFijos) : null;
 
@@ -532,12 +550,12 @@ function activarTiras() {
       ul.append(c);
     }
     if (ul.dataset.cerca) cargarTira(ul);   // las copias nuevas tambien hay que cargarlas
-    const ciclo = ul.children[unidad.length].offsetLeft - ul.children[0].offsetLeft;
     const s = {
-      caja, ul, ciclo, dir: k % 2 ? -1 : 1, velocidad: VELOCIDAD + (k % 3) * 4, pos: 0,
-      visible: true, tocando: false, cedeHasta: 0, escrito: 0, x: 0, mover: false,
+      caja, ul, unidades: unidad.length, ciclo: 0, mitad: 0, centros: [], dir: k % 2 ? -1 : 1, velocidad: VELOCIDAD + (k % 3) * 4, pos: 0,
+      visible: true, tocando: false, cedeHasta: 0, escrito: 0, x: 0, mover: false, pausaReel: 0,
     };
-    if (s.dir < 0) ul.scrollLeft = ciclo - 1;   // las que van hacia el otro lado arrancan al final del ciclo
+    remedir(s);
+    if (s.dir < 0) ul.scrollLeft = s.ciclo - 1;   // las que van hacia el otro lado arrancan al final del ciclo
     s.pos = s.escrito = ul.scrollLeft;
     caja.addEventListener('touchstart', () => { s.tocando = true; }, { passive: true });
     caja.addEventListener('touchend', () => { s.tocando = false; }, { passive: true });
