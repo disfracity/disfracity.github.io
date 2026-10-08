@@ -104,7 +104,9 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .chip[aria-pressed="true"] { background: #fff; color: #000; border-color: transparent; font-weight: 700; box-shadow: 0 0 18px rgba(255, 119, 189, .5); }
 
 /* busquedas sugeridas debajo del buscador */
-.sugeridas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 16px 0 0; }
+.sugeridas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 16px 0 0; min-height: 54px; }   /* lo que mide con los chips puestos: asi no empuja lo de abajo al aparecer */
+/* mientras se arma la galeria (aria-busy lo saca app.js) ocupa una pantalla: sin esto el pie de pagina se veia arriba un instante y saltaba hacia abajo (CLS de 0,39) */
+#grilla[aria-busy="true"] { min-height: 100vh; }
 .sugeridas .rotulo { margin-right: 4px; font: 400 1.1rem/1 var(--etiqueta); letter-spacing: .08em; text-transform: uppercase; color: var(--rosa); }
 
 /* un bloque por edicion, con el anio bien grande */

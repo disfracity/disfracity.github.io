@@ -531,6 +531,20 @@ function remedir(s) {
 }
 const medidor = 'ResizeObserver' in window ? new ResizeObserver(medirFijos) : null;
 
+/* los dedos y la rueda sobre una tira, con un solo escuchador por evento (activarTiras corre varias veces: al girar el telefono, al buscar...) */
+const tiraDe = e => {
+  const caja = e.target.closest?.('.tira-caja');
+  return caja ? tirasAuto.find(x => x.caja === caja) : undefined;
+};
+for (const tipo of ['touchstart', 'touchend', 'touchcancel']) {
+  el.grilla.addEventListener(tipo, e => { const s = tiraDe(e); if (s) s.tocando = tipo === 'touchstart'; }, { passive: true });
+}
+// la rueda horizontal arranca una animacion de scroll del navegador: se la deja correr sin pisarla
+el.grilla.addEventListener('wheel', e => {
+  const s = tiraDe(e);
+  if (s && (e.deltaX || e.shiftKey)) s.cedeHasta = performance.now() + CEDE_MS + 100;
+}, { passive: true });
+
 function activarTiras() {
   detenerTiras();
   medidor?.disconnect();
@@ -567,12 +581,6 @@ function activarTiras() {
     remedir(s);
     if (s.dir < 0) ul.scrollLeft = s.ciclo - 1;   // las que van hacia el otro lado arrancan al final del ciclo
     s.pos = s.escrito = ul.scrollLeft;
-    caja.addEventListener('touchstart', () => { s.tocando = true; }, { passive: true });
-    caja.addEventListener('touchend', () => { s.tocando = false; }, { passive: true });
-    caja.addEventListener('touchcancel', () => { s.tocando = false; }, { passive: true });
-    // una flecha o la rueda horizontal arrancan una animacion de scroll del navegador: se la deja correr sin pisarla
-    caja.addEventListener('click', e => { if (e.target.closest('.flecha-tira')) s.cedeHasta = performance.now() + 450; });
-    ul.addEventListener('wheel', e => { if (e.deltaX || e.shiftKey) s.cedeHasta = performance.now() + CEDE_MS + 100; }, { passive: true });
     observador?.observe(caja);
     tirasAuto.push(s);
   });
@@ -682,7 +690,8 @@ function pintar(lista, relacionadas, hayConsulta) {
   vistaSel = edVista || hayConsulta ? lista : [];
   el.grilla.replaceChildren(frag);
   // en el celular, solo en la pantalla principal, el scroll salta de una edicion a la otra (el CSS usa esta clase)
-  document.documentElement.classList.toggle('saltos', !edVista && !hayConsulta);
+  document.documentElement.classList.toggle('saltos', !edVista && !hayConsulta && !!el.grilla.querySelector('.tanda'));   // sin ediciones que mostrar (palabra que no se entiende) no hay saltos
+  el.grilla.removeAttribute('aria-busy');   // hasta aca reservaba lugar para que el pie no salte (ver estilo.css)
   activarTiras();
   vigilarReels();
 }
@@ -890,6 +899,7 @@ el.grilla.addEventListener('click', e => {
     const izq = flecha.classList.contains('izq');
     const paso = tira.clientWidth * 0.85;
     const s = tirasAuto.find(x => x.ul === tira);
+    if (s) s.cedeHasta = performance.now() + 450;   // la flecha arranca una animacion de scroll del navegador: se la deja correr sin pisarla
     if (s && izq && tira.scrollLeft < paso) tira.scrollLeft += s.ciclo;   // la tira da vueltas: se la pasa a lo mismo una vuelta mas adelante para que haya lugar hacia atras
     tira.scrollBy({ left: (izq ? -1 : 1) * paso, behavior: 'smooth' });
     return;
