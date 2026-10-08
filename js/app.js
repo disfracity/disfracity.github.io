@@ -345,7 +345,6 @@ function crearReel(r) {
   li.innerHTML =
     `<button type="button" class="reel-abrir" data-reel="${esc(r.codigo)}" aria-label="Ver el reel: ${esc(r.titulo)}">` +
     `<video muted loop playsinline preload="none" poster="${esc(r.portada)}"${r.preview ? ` data-src="${esc(r.preview)}"` : ''} aria-hidden="true" tabindex="-1"></video>` +
-    '<span class="reel-tag"><svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg>Reel</span>' +
     `<span class="reel-titulo">${esc(r.titulo)}</span></button>`;
   return li;
 }
