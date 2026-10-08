@@ -388,8 +388,11 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
    momento por la barra del navegador. Los navegadores sin lvh (iOS anterior a 15.4, Chrome anterior al 108) usan 100vh, que en ellos vale lo mismo. */
 :root { --alto-barra: 75px; --alto-cab: 84px; }   /* valores de antes de medir */
 
-/* celular, en cualquier posicion: encabezado compacto de cada edicion */
+/* celular, en cualquier posicion: logotipo mas grande y la frase un poco mas chica, y encabezado compacto de cada edicion */
 @media (max-width: 640px) {
+  .logo { width: clamp(62px, 19vw, 84px); }
+  .marca { font-size: clamp(2rem, 10.8vw, 3.3rem); }
+  .sub { font-size: clamp(1.1rem, 4.9vw, 1.25rem); }
   .tanda-cab { gap: 10px; margin-bottom: 8px; padding-bottom: 10px; }
   .tanda-cab .anio-t { flex: 1 1 auto; min-width: 0; gap: 4px 10px; }
   .tanda-cab .anio-n { flex: 0 0 100%; font-size: 2.1rem; }
