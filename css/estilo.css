@@ -119,17 +119,36 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .tanda-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--linea); }
 .tanda-cab .anio-t { margin: 0; padding: 0; border: 0; }
 .tanda-cab .anio-c { margin-left: 4px; }
-.anio-ver, .volver {
-  background: none; border: 0; padding: 8px 4px; white-space: nowrap;
+.volver {
+  background: none; border: 0; padding: 8px 0; white-space: nowrap;
   color: var(--turquesa); font: 400 1.05rem/1 var(--etiqueta); letter-spacing: .06em; text-transform: uppercase;
 }
-.anio-ver:hover, .volver:hover { color: #fff; }
-.volver { padding-left: 0; }
+.volver:hover { color: #fff; }
+/* "Ver todas": el boton para entrar a una edicion. Rosa lleno, grande y con un brillo que late para que se vea de lejos */
+.anio-ver {
+  flex: none; display: inline-flex; align-items: center; gap: 10px; margin-left: auto; padding: 12px 20px 11px 24px;
+  border: 0; border-radius: 999px; white-space: nowrap;
+  background: var(--degradado); color: var(--tinta);
+  font: 400 1.3rem/1 var(--etiqueta); letter-spacing: .07em; text-transform: uppercase;
+  box-shadow: 0 6px 24px rgba(236, 74, 168, .5);
+  animation: latido 2.6s ease-in-out infinite;
+  transition: transform .15s;
+}
+.anio-ver i { display: inline-block; font-style: normal; font-size: 1.55rem; line-height: .8; animation: flecha-va 1.5s ease-in-out infinite; }
+.anio-ver:hover { transform: translateY(-2px) scale(1.05); background: #fff; }
+.anio-ver:active { transform: scale(.97); }
+@keyframes latido {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 119, 189, .55), 0 6px 22px rgba(236, 74, 168, .45); }
+  50% { box-shadow: 0 0 0 11px rgba(255, 119, 189, 0), 0 6px 34px rgba(236, 74, 168, .8); }
+}
+@keyframes flecha-va { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .anio-ver, .anio-ver i { animation: none; } }
 
 .tira-caja { position: relative; }
 .tira {
-  --alto-fila: clamp(200px, min(max(40vw, 250px), 62vh), 480px);   /* grande, pero sin pasarse del alto de la ventana (celular acostado) */
-  --alto-reel: min(calc(var(--alto-fila) * 1.65), 78vh, 640px);   /* los reels son verticales: se ven bastante mas altos que las fotos */
+  --alto-fila: clamp(200px, min(max(46vw, 260px), 66vh), 520px);   /* grande, pero sin pasarse del alto de la ventana (celular acostado) */
+  --alto-reel: var(--alto-fila);   /* del mismo alto que las fotos: si fueran mas altos la tira se estira y quedan huecos vacios arriba y abajo de las fotos */
+  --proporcion-reel: .75;          /* ancho / alto del mosaico del reel en la tira (3:4): el video se recorta un poco arriba y abajo, completo se ve al abrirlo */
   list-style: none; margin: 0; padding: 8px 0 14px; display: flex; align-items: center; gap: 6px; overflow-x: auto;
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
@@ -137,12 +156,16 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 }
 .tira::-webkit-scrollbar { display: none; }
 .tira .foto { flex: 0 0 auto; }
-.tira .mas { flex: 0 0 auto; width: calc(var(--alto-fila) * 1.15); height: var(--alto-fila); }
+/* la fila de reels de arriba de la pagina de una edicion: solo reels, asi que ahi se ven altos y completos (9:16) */
+.tira.solo-reels {
+  --alto-reel: min(calc(var(--alto-fila) * 1.5), 78vh, 640px);
+  --proporcion-reel: .5625;
+}
 .solo-reels .reel-titulo { padding-top: 34px; font-size: .9rem; }
 
-/* reels: pasan en la misma tira que las fotos, en vertical (9:16), reproduciendose solos y sin sonido */
+/* reels: pasan en la misma tira que las fotos, del mismo alto, reproduciendose solos y sin sonido */
 .reel {
-  position: relative; flex: 0 0 auto; width: calc(var(--alto-reel, var(--alto-fila)) * .5625); height: var(--alto-reel, var(--alto-fila));
+  position: relative; flex: 0 0 auto; width: calc(var(--alto-reel, var(--alto-fila)) * var(--proporcion-reel, .5625)); height: var(--alto-reel, var(--alto-fila));
   border-radius: 6px; overflow: hidden; background: #000; transition: transform .2s, box-shadow .2s;
 }
 .reel.horizontal { width: calc(var(--alto-fila) * 1.7778); height: var(--alto-fila); }   /* los grabados de costado: del alto de una foto y en 16:9 */
@@ -207,15 +230,6 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .reelvisor .icono { flex: none; width: 40px; height: 40px; font-size: 1.5rem; }
 .reelvisor:not([hidden]) { animation: visor-fondo .3s ease-out; }
 .reelvisor:not([hidden]) .reelvisor-marco { animation: visor-foto .45s cubic-bezier(.2, .8, .2, 1); }
-.ver-todas {
-  width: 100%; height: 100%; display: grid; place-content: center; gap: 8px; text-align: center; padding: 8px;
-  border: 2px solid transparent; border-radius: 6px; color: #fff;
-  font: 400 1.15rem/1.15 var(--etiqueta); letter-spacing: .05em; text-transform: uppercase;
-  background: linear-gradient(var(--superficie), var(--superficie)) padding-box, var(--degradado) border-box;
-  transition: box-shadow .2s;
-}
-.ver-todas b { font: 900 1.6rem/1 var(--titulo); color: var(--rosa); }
-.ver-todas:hover { box-shadow: 0 0 26px rgba(255, 119, 189, .45); }
 .flecha-tira {
   display: none; position: absolute; top: calc(50% - 6px); transform: translateY(-50%); z-index: 3;
   width: 46px; height: 46px; padding: 0 0 4px; place-items: center; border-radius: 50%;
@@ -229,6 +243,7 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 @media (hover: none) { .tira .sel, .tira .bajar { display: none; } }   /* en el celular las miniaturas de la tira son chicas: se elige y baja desde el visor */
 
 .estado { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; padding: 12px 0; min-height: 52px; }
+.estado:has(#resumen:empty):not(:has(.acciones > :not([hidden]))) { display: none; }   /* sin nada que decir (pagina de una edicion sin buscar) no deja un hueco */
 .estado p { margin: 0; color: var(--suave); font-size: .96rem; }
 .estado strong { color: var(--texto); font-size: 1.05rem; }
 .estado .entendi { color: var(--rosa); font-weight: 700; }

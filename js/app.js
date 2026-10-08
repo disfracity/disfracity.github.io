@@ -355,7 +355,7 @@ function crearTanda(ed, total, mostradas) {
   const sec = document.createElement('section');
   sec.className = 'anio tanda';
   sec.innerHTML =
-    `<div class="tanda-cab">${tituloEd(ed, total)}<button type="button" class="anio-ver" data-ed="${esc(ed)}">Ver todas →</button></div>` +
+    `<div class="tanda-cab">${tituloEd(ed, total)}<button type="button" class="anio-ver" data-ed="${esc(ed)}" aria-label="Ver ${total === 1 ? 'la foto' : 'todas las fotos'} de ${esc(edInfo.get(ed)?.nombre || ed)}">${total === 1 ? 'Ver la foto' : 'Ver todas'}<i aria-hidden="true">→</i></button></div>` +
     `<div class="tira-caja"><button type="button" class="flecha-tira izq" aria-label="Fotos anteriores">‹</button>` +
     `<ul class="tira"></ul>` +
     `<button type="button" class="flecha-tira der" aria-label="Más fotos">›</button></div>`;
@@ -367,10 +367,6 @@ function crearTanda(ed, total, mostradas) {
     while (k < reels.length && i >= Math.floor((k + 0.5) * mostradas.length / reels.length)) ul.append(crearReel(reels[k++]));
   });
   while (k < reels.length) ul.append(crearReel(reels[k++]));
-  const mas = document.createElement('li');
-  mas.className = 'mas';
-  mas.innerHTML = `<button type="button" class="ver-todas" data-ed="${esc(ed)}"><span>${total === 1 ? 'Ver la foto' : `Ver las ${fmt(total)} fotos`}</span><b aria-hidden="true">→</b></button>`;
-  ul.append(mas);
   return sec;
 }
 
@@ -417,10 +413,11 @@ function bloquesResultado(exactas, relacionadas, conAnio) {
 }
 
 /* ---------- tiras en movimiento ----------
-   Cada tira avanza sola, una hacia cada lado, como fotos que van pasando. Se frena al pasar el mouse,
-   al tocarla, con el teclado y mientras esta abierto el visor; sigue pudiendo moverse a mano.
-   Para que el giro no tenga corte se agrega una copia de las fotos al final de la tira. */
+   Cada tira avanza sola, una hacia cada lado, como fotos que van pasando. No se frena nunca por el mouse, el foco, la rueda ni el teclado
+   (el usuario no quiere pausas): solo cede mientras se la mueve a mano (flechas, rueda horizontal, dedo) o esta abierto el visor, y sigue
+   desde donde la dejaron. Para que el giro no tenga corte se agrega una copia de las fotos al final de la tira. */
 const VELOCIDAD = 46;   // px por segundo
+const CEDE_MS = 140;    // despues de mover la tira a mano espera este rato sin movimiento antes de seguir (no corta el impulso del dedo)
 const movimientoReducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let tirasAuto = [];
 let rafTiras = 0, tUltimo = 0;
@@ -445,12 +442,14 @@ function bucleTiras(t) {
   tUltimo = t;
   const visorAbierto = !el.visor.hidden || !el.reelVisor.hidden;
   for (const s of tirasAuto) {
-    const quieta = s.tocando || !s.visible || visorAbierto || t < s.pausa;
-    s.corriendo = !quieta;
-    if (quieta) { s.pos = s.ul.scrollLeft; continue; }
+    const x = s.ul.scrollLeft;
+    if (Math.abs(x - s.escrito) > 1.5) s.cedeHasta = t + CEDE_MS;   // la movieron a mano (flechas, rueda, dedo): sigue desde ahi
+    const quieta = s.tocando || !s.visible || visorAbierto || t < s.cedeHasta;
+    if (quieta) { s.pos = x; s.escrito = x; continue; }
     s.pos += s.dir * s.velocidad * dt;
     if (s.pos >= s.ciclo) s.pos -= s.ciclo; else if (s.pos < 0) s.pos += s.ciclo;
     s.ul.scrollLeft = s.pos;
+    s.escrito = s.ul.scrollLeft;   // lo que quedo de verdad (el navegador redondea): lo que se aparte de esto lo movio otra cosa
   }
   rafTiras = requestAnimationFrame(bucleTiras);
 }
@@ -473,22 +472,16 @@ function activarTiras() {
     const ciclo = ul.children[unidad.length].offsetLeft - ul.children[0].offsetLeft;
     const s = {
       caja, ul, ciclo, dir: k % 2 ? -1 : 1, velocidad: VELOCIDAD + (k % 3) * 4, pos: 0,
-      visible: true, tocando: false, pausa: 0, corriendo: false,
+      visible: true, tocando: false, cedeHasta: 0, escrito: 0,
     };
     if (s.dir < 0) ul.scrollLeft = ciclo - 1;   // las que van hacia el otro lado arrancan al final del ciclo
-    s.pos = ul.scrollLeft;
-    const demora = () => { s.pausa = performance.now() + 3000; };
+    s.pos = s.escrito = ul.scrollLeft;
     caja.addEventListener('touchstart', () => { s.tocando = true; }, { passive: true });
-    caja.addEventListener('touchend', () => { s.tocando = false; demora(); }, { passive: true });
-    caja.addEventListener('touchcancel', () => { s.tocando = false; demora(); }, { passive: true });
-    caja.addEventListener('focusin', demora);   // con el teclado espera un rato; al cerrar una foto el foco vuelve a ella y la tira no se queda frenada
-    caja.addEventListener('click', e => { if (e.target.closest('.flecha-tira')) s.pausa = performance.now() + 3500; });
-    ul.addEventListener('wheel', demora, { passive: true });
-    ul.addEventListener('scroll', () => {   // movida a mano: se mantiene dentro del ciclo
-      if (s.corriendo) return;
-      const x = ul.scrollLeft;
-      if (x >= s.ciclo) ul.scrollLeft = x - s.ciclo; else if (x <= 0) ul.scrollLeft = x + s.ciclo;
-    }, { passive: true });
+    caja.addEventListener('touchend', () => { s.tocando = false; }, { passive: true });
+    caja.addEventListener('touchcancel', () => { s.tocando = false; }, { passive: true });
+    // una flecha o la rueda horizontal arrancan una animacion de scroll del navegador: se la deja correr sin pisarla
+    caja.addEventListener('click', e => { if (e.target.closest('.flecha-tira')) s.cedeHasta = performance.now() + 450; });
+    ul.addEventListener('wheel', e => { if (e.deltaX || e.shiftKey) s.cedeHasta = performance.now() + CEDE_MS + 100; }, { passive: true });
     observador?.observe(caja);
     tirasAuto.push(s);
   });
@@ -793,7 +786,11 @@ el.grilla.addEventListener('click', e => {
   const flecha = e.target.closest('.flecha-tira');
   if (flecha) {
     const tira = $('.tira', flecha.parentElement);
-    tira.scrollBy({ left: (flecha.classList.contains('izq') ? -1 : 1) * tira.clientWidth * 0.85, behavior: 'smooth' });
+    const izq = flecha.classList.contains('izq');
+    const paso = tira.clientWidth * 0.85;
+    const s = tirasAuto.find(x => x.ul === tira);
+    if (s && izq && tira.scrollLeft < paso) tira.scrollLeft += s.ciclo;   // la tira da vueltas: se la pasa a lo mismo una vuelta mas adelante para que haya lugar hacia atras
+    tira.scrollBy({ left: (izq ? -1 : 1) * paso, behavior: 'smooth' });
     return;
   }
   const li = e.target.closest('.foto');
