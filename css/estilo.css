@@ -124,25 +124,27 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
   color: var(--turquesa); font: 400 1.05rem/1 var(--etiqueta); letter-spacing: .06em; text-transform: uppercase;
 }
 .volver:hover { color: #fff; }
-/* "Ver todas": el boton para entrar a una edicion. Rosa lleno, grande y con un brillo que late para que se vea de lejos */
+/* "Ver todas": el boton para entrar a una edicion. Rosa lleno, grande y con un anillo que late para que se vea de lejos.
+   El anillo y la flecha solo mueven transform y opacity: eso lo hace la GPU. Antes latia el box-shadow, que obliga a repintar el boton
+   en cada cuadro y, con las tiras moviendose, hacia trabar el celular. */
 .anio-ver {
-  flex: none; display: inline-flex; align-items: center; gap: 10px; margin-left: auto; padding: 12px 20px 11px 24px;
+  position: relative; flex: none; display: inline-flex; align-items: center; gap: 10px; margin-left: auto; padding: 12px 20px 11px 24px;
   border: 0; border-radius: 999px; white-space: nowrap;
   background: var(--degradado); color: var(--tinta);
   font: 400 1.3rem/1 var(--etiqueta); letter-spacing: .07em; text-transform: uppercase;
   box-shadow: 0 6px 24px rgba(236, 74, 168, .5);
-  animation: latido 2.6s ease-in-out infinite;
   transition: transform .15s;
+}
+.anio-ver::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; border: 3px solid var(--rosa); pointer-events: none; will-change: transform, opacity;
+  animation: anillo 2.4s ease-out infinite;
 }
 .anio-ver i { display: inline-block; font-style: normal; font-size: 1.55rem; line-height: .8; animation: flecha-va 1.5s ease-in-out infinite; }
 .anio-ver:hover { transform: translateY(-2px) scale(1.05); background: #fff; }
 .anio-ver:active { transform: scale(.97); }
-@keyframes latido {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 119, 189, .55), 0 6px 22px rgba(236, 74, 168, .45); }
-  50% { box-shadow: 0 0 0 11px rgba(255, 119, 189, 0), 0 6px 34px rgba(236, 74, 168, .8); }
-}
+@keyframes anillo { 0% { transform: scale(1); opacity: .9; } 70%, 100% { transform: scale(1.3, 1.65); opacity: 0; } }
 @keyframes flecha-va { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
-@media (prefers-reduced-motion: reduce) { .anio-ver, .anio-ver i { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .anio-ver::after, .anio-ver i { animation: none; } .anio-ver::after { display: none; } }
 
 .tira-caja { position: relative; }
 .tira {
@@ -259,6 +261,10 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 }
 .foto::before { content: ""; display: block; padding-bottom: calc(100% / var(--r)); }
 .foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+/* fotos de las tiras: la miniatura hace de fondo y la version mediana se funde encima cuando termino de decodificarse (ver crearFoto y cargarTira en app.js) */
+.foto.en-tira { background-size: cover; background-position: center; }
+.foto.en-tira img { opacity: 0; transition: opacity .4s ease-out, transform .3s; }
+.foto.en-tira img.lista { opacity: 1; }
 @media (hover: hover) {
   .foto:hover { transform: translateY(-3px); z-index: 2; box-shadow: 0 0 0 2px var(--rosa), 0 12px 32px rgba(255, 119, 189, .35); }
   .foto:hover img { transform: scale(1.04); }
@@ -276,8 +282,13 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .foto.elegida { box-shadow: 0 0 0 3px #fff, 0 0 28px rgba(255, 119, 189, .65); }
 .foto.elegida .sel { opacity: 1; background: var(--rosa); color: var(--tinta); font-weight: 700; border-color: transparent; }
 @media (hover: none) {
-  .foto .sel, .foto .bajar { opacity: 1; transform: none; }
+  .foto .sel, .foto .bajar { opacity: 1; transform: none; backdrop-filter: none; background: rgba(9, 5, 10, .8); }   /* sin desenfoque: con las tiras moviendose el celular lo recalculaba en cada cuadro */
   :root { --alto-fila: 150px; }
+}
+/* en pantallas tactiles y de celular, lo que desenfoca o enmascara lo que se mueve debajo se saca: es lo que mas hacia trabar al iPhone */
+@media (hover: none), (max-width: 640px) {
+  .barra { background: rgba(9, 5, 10, .97); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .tira { -webkit-mask-image: none; mask-image: none; }
 }
 
 .vacio { text-align: center; color: var(--suave); padding: 60px 16px; font-size: 1.1rem; }
@@ -355,10 +366,10 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 @keyframes visor-foto { from { opacity: 0; transform: scale(.85); } }
 
 @media (max-width: 640px) {
-  .barra-in { padding: 10px 12px; }
-  .buscador input { height: 58px; font-size: 1.12rem; padding: 0 52px; }
-  .lupa { left: 18px; top: 17px; }
-  .borrar { right: 10px; top: 10px; }
+  .barra-in { padding: 9px 12px 8px; }
+  .buscador input { height: 56px; font-size: 1.12rem; padding: 0 52px; }
+  .lupa { left: 18px; top: 16px; }
+  .borrar { right: 10px; top: 9px; }
   main { padding: 4px 8px 40px; }
   .sugeridas { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
   .sugeridas::-webkit-scrollbar { display: none; }
@@ -367,6 +378,34 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
   .flecha { display: none; }
   .visor-botones { width: 100%; }
   .visor-botones > * { flex: 1; }
+}
+
+/* ---------- celular: cada edicion ocupa casi toda la pantalla y el scroll salta de una a la otra ----------
+   app.js mide la barra pegajosa (--alto-barra) y el encabezado de una tanda (--alto-cab); las fotos y los reels de la tira se hacen del alto
+   que queda. 100svh es el alto de la pantalla con las barras de Safari a la vista, asi que nunca se pasa. */
+:root { --alto-barra: 75px; --alto-cab: 84px; }   /* valores de antes de medir */
+@supports (height: 100svh) {
+  @media (max-width: 640px) {
+    .tanda { display: flex; flex-direction: column; min-height: calc(100svh - var(--alto-barra)); padding-top: 14px; }
+    .tanda .tira-caja { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+    .tanda .tira { --alto-fila: calc(100svh - var(--alto-barra) - var(--alto-cab) - 46px); --proporcion-reel: .5625; }
+    /* una foto horizontal no puede ser mas ancha que la pantalla: se achica para que se vea entera y queda centrada en el alto de la tira */
+    .tanda .tira .foto { width: min(calc(var(--r) * var(--alto-fila)), calc(100vw - 28px)); }
+    .tanda .reel.horizontal { width: calc(100vw - 28px); height: auto; aspect-ratio: 16 / 9; }
+    .tira.solo-reels { --alto-reel: min(calc(100svh - var(--alto-barra) - 170px), 560px); }
+    /* encabezado de la tanda: el anio arriba, la edicion y la cantidad abajo, y el boton a la derecha */
+    .tanda-cab { gap: 10px; margin-bottom: 8px; padding-bottom: 10px; }
+    .tanda-cab .anio-t { flex: 1 1 auto; min-width: 0; gap: 4px 10px; }
+    .tanda-cab .anio-n { flex: 0 0 100%; font-size: 2.1rem; }
+    .tanda-cab .anio-e { font-size: 1rem; }
+    .tanda-cab .anio-c { margin-left: 0; font-size: .9rem; }
+    .anio-ver { padding: 10px 16px 9px 18px; font-size: 1.15rem; gap: 7px; }
+    /* el scroll vertical salta de una edicion a la otra (solo en la pantalla principal: app.js pone la clase `saltos`) */
+    html.saltos { scroll-snap-type: y mandatory; scroll-padding-top: var(--alto-barra); }
+    html.saltos .hero { scroll-snap-align: start; }
+    html.saltos .tanda { scroll-snap-align: start; scroll-snap-stop: always; }
+    html.saltos .pie { scroll-snap-align: end; }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

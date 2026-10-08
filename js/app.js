@@ -274,7 +274,9 @@ function altDe(p) {
 const GENERICAS = new Set(['sin disfraz', 'disfraz grupal', 'pareja disfrazada']);
 
 const MUESTRA = 20;     // fotos de muestra por edicion cuando no se busca nada
+const MUESTRA_CEL = 14; // en el celular se usan las 14 mas claras de esas 20: cada foto es casi del tamano de la pantalla y hay menos que cargar
 const MAX_REL = 60;     // fotos relacionadas que se suman a los resultados de una busqueda
+const esCelular = matchMedia('(max-width: 640px)');   // celular en vertical: cada edicion ocupa la pantalla (ver estilo.css)
 const cacheMuestra = new Map();
 
 /** muestra de una edicion: un disfraz distinto en cada foto, las mas claras primero */
@@ -305,20 +307,26 @@ function muestraDe(ed) {
   return salida;
 }
 
-/** `grande`: foto de una tira, que se ve mas grande que una miniatura, asi que usa la version de 1800 px */
+/** `grande`: foto de una tira de la portada, que se ve mucho mas grande que una miniatura. Para que nunca quede en negro mientras
+    llega (en el celular se veian tiles negros que aparecian de golpe), la miniatura, que es chica y ya esta cargada, hace de fondo,
+    y la version mediana (p.m, de 1200 px) se carga aparte, de a poco (`cargarTira`), y se funde encima cuando esta lista.
+    Las fotos de muestra tienen p.m; si alguna no la tuviera se usa la grande (p.w, de 1800 px). */
 function crearFoto(p, conAnio = false, grande = false) {
   const i = vista.length;
   vista.push(p);
   const li = document.createElement('li');
   const ok = elegidas.has(p.id);
   const anio = conAnio ? edInfo.get(p.ed)?.anio : '';
-  li.className = 'foto' + (ok ? ' elegida' : '');
+  li.className = 'foto' + (ok ? ' elegida' : '') + (grande ? ' en-tira' : '');
   li.tabIndex = 0;
   li.dataset.i = i;
   li.dataset.id = p.id;
   li.style.setProperty('--r', (p.tw / p.th).toFixed(4));
+  if (grande) li.style.backgroundImage = `url("${p.t}")`;
   li.innerHTML =
-    `<img src="${esc(grande ? p.w : p.t)}" width="${p.tw}" height="${p.th}" loading="lazy" decoding="async" alt="${esc(altDe(p))}">` +
+    (grande
+      ? `<img data-src="${esc(p.m || p.w)}" width="${p.tw}" height="${p.th}" decoding="async" alt="${esc(altDe(p))}">`
+      : `<img src="${esc(p.t)}" width="${p.tw}" height="${p.th}" loading="lazy" decoding="async" alt="${esc(altDe(p))}">`) +
     (anio ? `<span class="anio-chip">${esc(anio)}</span>` : '') +
     `<button type="button" class="sel" aria-pressed="${ok}" aria-label="Seleccionar foto">${ok ? '✓' : '+'}</button>` +
     `<a class="bajar" href="${esc(p.w)}" download="Disfracity-${esc(p.id)}.jpg" aria-label="Descargar foto">↓</a>`;
@@ -432,6 +440,7 @@ const observador = 'IntersectionObserver' in window
 function detenerTiras() {
   cancelAnimationFrame(rafTiras);
   observador?.disconnect();
+  vigiladorCarga?.disconnect();
   for (const s of tirasAuto) s.ul.querySelectorAll('[data-clon]').forEach(c => c.remove());
   tirasAuto = [];
 }
@@ -440,23 +449,77 @@ function bucleTiras(t) {
   const dt = Math.min(0.064, (t - tUltimo) / 1000);
   tUltimo = t;
   const visorAbierto = !el.visor.hidden || !el.reelVisor.hidden;
+  // primero se lee todo y despues se escribe todo: mezclar lecturas y escrituras de scrollLeft obliga al navegador a recalcular de mas
+  for (const s of tirasAuto) s.x = s.ul.scrollLeft;
   for (const s of tirasAuto) {
-    const x = s.ul.scrollLeft;
-    if (Math.abs(x - s.escrito) > 1.5) s.cedeHasta = t + CEDE_MS;   // la movieron a mano (flechas, rueda, dedo): sigue desde ahi
-    const quieta = s.tocando || !s.visible || visorAbierto || t < s.cedeHasta;
-    if (quieta) { s.pos = x; s.escrito = x; continue; }
+    if (Math.abs(s.x - s.escrito) > 1.5) s.cedeHasta = t + CEDE_MS;   // la movieron a mano (flechas, rueda, dedo): sigue desde ahi
+    s.mover = !(s.tocando || !s.visible || visorAbierto || t < s.cedeHasta);
+    if (!s.mover) { s.pos = s.escrito = s.x; continue; }
     s.pos += s.dir * s.velocidad * dt;
     if (s.pos >= s.ciclo) s.pos -= s.ciclo; else if (s.pos < 0) s.pos += s.ciclo;
-    s.ul.scrollLeft = s.pos;
-    s.escrito = s.ul.scrollLeft;   // lo que quedo de verdad (el navegador redondea): lo que se aparte de esto lo movio otra cosa
+    s.escrito = s.pos;   // lo que se escribe: el navegador lo redondea a lo mas medio pixel, y lo que se aparte de mas lo movio otra cosa
   }
+  for (const s of tirasAuto) if (s.mover) s.ul.scrollLeft = s.pos;
   rafTiras = requestAnimationFrame(bucleTiras);
 }
 
+/* ---------- carga de las fotos de las tiras ----------
+   Las fotos de una tira de la portada empiezan sin `src` (solo `data-src`) y con la miniatura de fondo. Cuando la tira esta cerca de
+   la pantalla se piden de a dos, las mas cercanas a lo que se ve primero, y cada una se funde encima de su miniatura solo despues
+   de decodificarse. Antes eran `loading="lazy"` de 1800 px: en el celular aparecian a destiempo (tiles negros) y, ocupando mas
+   de 600 MB ya decodificadas, el telefono las descartaba y volvian a quedar en negro al dar la vuelta la tira. */
+function cargarImagen(img) {
+  if (!img.dataset.src || img.dataset.pedida) return Promise.resolve();
+  img.dataset.pedida = '1';
+  img.src = img.dataset.src;
+  const lista = () => img.classList.add('lista');
+  return (img.decode ? img.decode() : new Promise(r => { img.onload = r; img.onerror = r; })).then(lista, lista);
+}
+
+async function cargarTira(ul) {
+  const ref = ul.scrollLeft + ul.clientWidth / 2;
+  const pendientes = [...ul.querySelectorAll('img[data-src]:not([data-pedida])')]
+    .map(img => ({ img, d: Math.abs(img.parentElement.offsetLeft + img.parentElement.offsetWidth / 2 - ref) }))
+    .sort((a, b) => a.d - b.d).map(x => x.img);
+  for (let k = 0; k < pendientes.length; k += 2) await Promise.all(pendientes.slice(k, k + 2).map(cargarImagen));
+}
+
+const vigiladorCarga = 'IntersectionObserver' in window
+  ? new IntersectionObserver(entradas => {
+    for (const e of entradas) {
+      const ul = $('.tira', e.target);
+      ul.dataset.cerca = e.isIntersecting ? '1' : '';
+      if (e.isIntersecting) cargarTira(ul);
+    }
+  }, { rootMargin: '100% 0px' })   // cuando esta a menos de una pantalla, arriba o abajo
+  : null;
+
+/** alturas que usa el CSS del celular para que cada edicion llene la pantalla: la barra pegajosa y el encabezado de una tanda */
+function medirFijos() {
+  const raiz = document.documentElement.style;
+  const barra = $('.barra');
+  if (barra) raiz.setProperty('--alto-barra', barra.offsetHeight + 'px');
+  const cab = $('.tanda-cab');
+  if (cab) raiz.setProperty('--alto-cab', Math.round(cab.offsetHeight + (parseFloat(getComputedStyle(cab).marginBottom) || 0)) + 'px');
+}
+const medidor = 'ResizeObserver' in window ? new ResizeObserver(medirFijos) : null;
+
 function activarTiras() {
   detenerTiras();
+  medidor?.disconnect();
+  const cajas = [...el.grilla.querySelectorAll('.tira-caja')];
+  for (const caja of cajas) {
+    if (vigiladorCarga) vigiladorCarga.observe(caja);
+    else cargarTira($('.tira', caja));
+  }
+  medirFijos();
+  if (medidor) {
+    const barra = $('.barra'), cab = $('.tanda-cab');
+    if (barra) medidor.observe(barra);
+    if (cab) medidor.observe(cab);
+  }
   if (movimientoReducido) return;
-  [...el.grilla.querySelectorAll('.tira-caja')].forEach((caja, k) => {
+  cajas.forEach((caja, k) => {
     const ul = $('.tira', caja);
     const unidad = [...ul.children];
     if (!unidad.length || ul.scrollWidth <= ul.clientWidth + 8) return;   // si cabe entera se queda quieta
@@ -468,10 +531,11 @@ function activarTiras() {
       c.querySelectorAll('button, a').forEach(x => { x.tabIndex = -1; });
       ul.append(c);
     }
+    if (ul.dataset.cerca) cargarTira(ul);   // las copias nuevas tambien hay que cargarlas
     const ciclo = ul.children[unidad.length].offsetLeft - ul.children[0].offsetLeft;
     const s = {
       caja, ul, ciclo, dir: k % 2 ? -1 : 1, velocidad: VELOCIDAD + (k % 3) * 4, pos: 0,
-      visible: true, tocando: false, cedeHasta: 0, escrito: 0,
+      visible: true, tocando: false, cedeHasta: 0, escrito: 0, x: 0, mover: false,
     };
     if (s.dir < 0) ul.scrollLeft = ciclo - 1;   // las que van hacia el otro lado arrancan al final del ciclo
     s.pos = s.escrito = ul.scrollLeft;
@@ -557,9 +621,17 @@ el.reelVisor.addEventListener('click', e => { if (e.target === el.reelVisor) cer
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !el.reelVisor.hidden) cerrarReel(); });
 
 let temporizadorTamano;
+let anchoPrevio = innerWidth, enCelularPrevio = esCelular.matches;
 window.addEventListener('resize', () => {
+  // en el iPhone el evento salta cada vez que la barra de Safari se achica o se agranda al hacer scroll (cambia solo el alto):
+  // rehacer las tiras ahi las reiniciaba y las fotos parpadeaban. Solo se rehacen si cambio el ancho (girar el telefono, cambiar la ventana)
+  if (Math.abs(innerWidth - anchoPrevio) < 2) return;
+  anchoPrevio = innerWidth;
   clearTimeout(temporizadorTamano);
-  temporizadorTamano = setTimeout(() => { if (!edVista) { activarTiras(); vigilarReels(); } }, 250);
+  temporizadorTamano = setTimeout(() => {
+    if (esCelular.matches !== enCelularPrevio) { enCelularPrevio = esCelular.matches; buscar({ inmediato: true }); return; }   // de celular a compu o al reves: otra cantidad de fotos
+    if (!edVista) { activarTiras(); vigilarReels(); }
+  }, 250);
 });
 
 function pintar(lista, relacionadas, hayConsulta) {
@@ -576,11 +648,13 @@ function pintar(lista, relacionadas, hayConsulta) {
   } else {
     for (const ed of CONF.ediciones.map(e => e.slug).reverse()) {   // la mas nueva primero
       const delEd = lista.filter(p => p.ed === ed);
-      if (delEd.length) frag.append(crearTanda(ed, delEd.length, muestraDe(ed)));
+      if (delEd.length) frag.append(crearTanda(ed, delEd.length, esCelular.matches ? muestraDe(ed).slice(0, MUESTRA_CEL) : muestraDe(ed)));
     }
   }
   vistaSel = edVista || hayConsulta ? lista : [];
   el.grilla.replaceChildren(frag);
+  // en el celular, solo en la pantalla principal, el scroll salta de una edicion a la otra (el CSS usa esta clase)
+  document.documentElement.classList.toggle('saltos', !edVista && !hayConsulta);
   activarTiras();
   vigilarReels();
 }
