@@ -426,7 +426,7 @@ function bloquesResultado(exactas, relacionadas, conAnio) {
    para que se vea. Para que el giro no tenga corte se agrega una copia de las fotos al final de la tira. */
 const VELOCIDAD = 46;   // px por segundo
 const CEDE_MS = 140;    // despues de mover la tira a mano espera este rato sin movimiento antes de seguir (no corta el impulso del dedo)
-const PAUSA_REEL_MS = 3000;   // el reel que pasa por el medio de la tira se queda quieto este rato
+const PAUSA_REEL_MS = 3000;   // el reel que pasa por el medio de la tira se queda quieto este rato (y despues la tira sigue)
 const movimientoReducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let tirasAuto = [];
 let rafTiras = 0, tUltimo = 0;
@@ -457,12 +457,18 @@ function bucleTiras(t) {
     if (Math.abs(s.x - s.escrito) > 1.5) s.cedeHasta = t + CEDE_MS;   // la movieron a mano (flechas, rueda, dedo): sigue desde ahi
     s.mover = !(s.tocando || !s.visible || visorAbierto || t < s.cedeHasta || t < s.pausaReel);
     if (!s.mover) { s.pos = s.escrito = s.x; continue; }
-    let sig = s.pos + s.dir * s.velocidad * dt;
+    const paso = s.dir * s.velocidad * dt;
+    let sig = s.pos + paso;
     // si en este paso el medio de la tira pasa por el medio de un reel, la tira se queda justo ahi (reel centrado) y espera;
     // los centros incluyen las copias de las fotos, asi que tambien vale al dar la vuelta
     const desde = s.pos + s.mitad, hasta = sig + s.mitad;
-    const centro = s.centros.find(c => (s.dir > 0 ? c > desde && c <= hasta : c < desde && c >= hasta));
-    if (centro !== undefined) { sig = centro - s.mitad; s.pausaReel = t + PAUSA_REEL_MS; }
+    const i = s.centros.findIndex((c, k) => k % s.unidadesReel !== s.ultimoReel && (s.dir > 0 ? c > desde && c <= hasta : c < desde && c >= hasta));
+    if (i >= 0) {
+      sig = s.centros[i] - s.mitad;
+      s.pausaReel = t + PAUSA_REEL_MS;
+      s.ultimoReel = i % s.unidadesReel;   // este reel (o su copia) ya freno: no vuelve a frenar hasta que la tira se aleje de el
+      s.recorrido = 0;
+    } else if (s.ultimoReel >= 0 && (s.recorrido += Math.abs(paso)) > 120) s.ultimoReel = -1;
     s.pos = sig;
     if (s.pos >= s.ciclo) s.pos -= s.ciclo; else if (s.pos < 0) s.pos += s.ciclo;
     s.escrito = s.pos;   // lo que se escribe: el navegador lo redondea a lo mas medio pixel, y lo que se aparte de mas lo movio otra cosa
@@ -519,6 +525,7 @@ function remedir(s) {
   s.mitad = s.ul.clientWidth / 2;
   const origen = s.ul.getBoundingClientRect().left - s.ul.scrollLeft;   // donde queda el comienzo del contenido de la tira
   s.centros = [...s.ul.querySelectorAll('.reel')].map(r => { const b = r.getBoundingClientRect(); return b.left - origen + b.width / 2; });
+  s.unidadesReel = Math.max(1, s.centros.length / 2);   // cuantos reels hay en una vuelta (la otra mitad son las copias)
 }
 const medidor = 'ResizeObserver' in window ? new ResizeObserver(medirFijos) : null;
 
@@ -551,8 +558,9 @@ function activarTiras() {
     }
     if (ul.dataset.cerca) cargarTira(ul);   // las copias nuevas tambien hay que cargarlas
     const s = {
-      caja, ul, unidades: unidad.length, ciclo: 0, mitad: 0, centros: [], dir: k % 2 ? -1 : 1, velocidad: VELOCIDAD + (k % 3) * 4, pos: 0,
+      caja, ul, unidades: unidad.length, ciclo: 0, mitad: 0, centros: [], unidadesReel: 1, dir: k % 2 ? -1 : 1, velocidad: VELOCIDAD + (k % 3) * 4, pos: 0,
       visible: true, tocando: false, cedeHasta: 0, escrito: 0, x: 0, mover: false, pausaReel: 0,
+      ultimoReel: -1, recorrido: 0,   // el reel que acaba de frenar y cuanto avanzo la tira desde entonces
     };
     remedir(s);
     if (s.dir < 0) ul.scrollLeft = s.ciclo - 1;   // las que van hacia el otro lado arrancan al final del ciclo
