@@ -142,7 +142,7 @@ main { padding: 4px 16px 40px; max-width: 1840px; margin: 0 auto; }
 .anio-ver i { display: inline-block; font-style: normal; font-size: 1.55rem; line-height: .8; animation: flecha-va 1.5s ease-in-out infinite; }
 .anio-ver:hover { transform: translateY(-2px) scale(1.05); background: #fff; }
 .anio-ver:active { transform: scale(.97); }
-@keyframes anillo { 0% { transform: scale(1); opacity: .9; } 70%, 100% { transform: scale(1.3, 1.65); opacity: 0; } }
+@keyframes anillo { 0% { transform: scale(1); opacity: .9; } 70%, 100% { transform: scale(1.1, 1.7); opacity: 0; } }   /* crece poco a lo ancho: el boton esta pegado al borde de la pantalla del celular y el anillo se cortaba */
 @keyframes flecha-va { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
 @media (prefers-reduced-motion: reduce) { .anio-ver::after, .anio-ver i { animation: none; } .anio-ver::after { display: none; } }
 
