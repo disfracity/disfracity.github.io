@@ -1,6 +1,21 @@
 {
   "titulo": "Disfracity",
   "ia": false,
+  "destacado": {
+    "nombre": "Entrevistas a los mejores disfraces",
+    "etiqueta": "Nuevo",
+    "reels": [
+      {
+        "codigo": "entrevistas",
+        "titulo": "Entrevistas a los mejores disfraces",
+        "portada": "reels/entrevistas.jpg",
+        "preview": "reels/entrevistas_p.mp4",
+        "video": "reels/entrevistas.mp4",
+        "ancho": 720,
+        "alto": 1272
+      }
+    ]
+  },
   "ediciones": [
     {
       "slug": "primera",

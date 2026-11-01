@@ -379,6 +379,23 @@ function crearTanda(ed, total, mostradas) {
   return sec;
 }
 
+/** la fila de arriba de todo (config.json > destacado): se arma como una tanda, pero en vez de fotos lleva un video (la ultima novedad) */
+function crearTandaDestacada() {
+  const d = CONF.destacado;
+  const reels = (d?.reels || []).filter(r => /^[\w-]{6,20}$/.test(r.codigo || '') && r.portada && r.video);
+  if (!reels.length) return null;
+  const sec = document.createElement('section');
+  sec.className = 'anio tanda destacada';
+  sec.innerHTML =
+    `<div class="tanda-cab"><h2 class="anio-t">${d.etiqueta ? `<span class="anio-n">${esc(d.etiqueta)}</span>` : ''}` +
+    `<span class="anio-e">${esc(d.nombre)}</span>` +
+    `<span class="anio-c">${reels.length} ${reels.length === 1 ? 'video' : 'videos'}</span></h2>` +
+    `<button type="button" class="anio-ver" data-video="${esc(reels[0].codigo)}" aria-label="Ver el video: ${esc(d.nombre)}">Ver video<i aria-hidden="true">→</i></button></div>` +
+    `<div class="tira-caja"><ul class="tira"></ul></div>`;
+  $('.tira', sec).append(...reels.map(crearReel));
+  return sec;
+}
+
 /** encabezado de la pagina de una edicion, con una tira con sus reels (salvo al buscar adentro, para dejar lugar a las fotos) */
 function cabeceraAnio(ed, n, conReels = true) {
   const sec = document.createElement('section');
@@ -515,8 +532,11 @@ function medirFijos() {
   const raiz = document.documentElement.style;
   const barra = $('.barra');
   if (barra) raiz.setProperty('--alto-barra', barra.offsetHeight + 'px');
-  const cab = $('.tanda-cab');
-  if (cab) raiz.setProperty('--alto-cab', Math.round(cab.offsetHeight + (parseFloat(getComputedStyle(cab).marginBottom) || 0)) + 'px');
+  const altoCab = c => Math.round(c.offsetHeight + (parseFloat(getComputedStyle(c).marginBottom) || 0)) + 'px';
+  const cab = $('.tanda:not(.destacada) .tanda-cab');   // la fila de arriba tiene un titulo mas largo: se mide aparte
+  if (cab) raiz.setProperty('--alto-cab', altoCab(cab));
+  const cabDest = $('.tanda.destacada .tanda-cab');
+  if (cabDest) cabDest.closest('.tanda').style.setProperty('--alto-cab', altoCab(cabDest));
   for (const s of tirasAuto) remedir(s);   // las fotos y los reels cambian de ancho con esas alturas
 }
 
@@ -555,9 +575,9 @@ function activarTiras() {
   }
   medirFijos();
   if (medidor) {
-    const barra = $('.barra'), cab = $('.tanda-cab');
+    const barra = $('.barra');
     if (barra) medidor.observe(barra);
-    if (cab) medidor.observe(cab);
+    for (const cab of [$('.tanda:not(.destacada) .tanda-cab'), $('.tanda.destacada .tanda-cab')]) if (cab) medidor.observe(cab);
   }
   if (movimientoReducido) return;
   cajas.forEach((caja, k) => {
@@ -626,10 +646,13 @@ function abrirReel(codigo, origen) {
     const r = (ed.reels || []).find(x => x.codigo === codigo);
     if (r) { hallado = { r, ed }; break; }
   }
+  const dest = (CONF.destacado?.reels || []).find(x => x.codigo === codigo);   // el video de la fila de arriba: no es un reel de Instagram
+  if (!hallado && dest) hallado = { r: dest, ed: null };
   if (!hallado) return;
   const { r, ed } = hallado;
   reelOrigen = origen;
-  el.reelTitulo.textContent = `${ed.nombre} · ${r.titulo}`;
+  el.reelTitulo.textContent = ed ? `${ed.nombre} · ${r.titulo}` : r.titulo;
+  el.reelIg.style.display = ed ? '' : 'none';
   el.reelIg.href = `https://www.instagram.com/reel/${r.codigo}/`;
   el.reelMarco.classList.toggle('horizontal', r.ancho > r.alto);
   el.reelVideo.poster = r.portada;
@@ -682,6 +705,8 @@ function pintar(lista, relacionadas, hayConsulta) {
   } else if (hayConsulta) {
     frag.append(...bloquesResultado(lista, relacionadas, true));   // directo a las fotos, grandes
   } else {
+    const destacada = crearTandaDestacada();   // la ultima novedad, arriba de todo
+    if (destacada) frag.append(destacada);
     for (const ed of CONF.ediciones.map(e => e.slug).reverse()) {   // la mas nueva primero
       const delEd = lista.filter(p => p.ed === ed);
       if (delEd.length) frag.append(crearTanda(ed, delEd.length, esCelular.matches ? muestraDe(ed).slice(0, MUESTRA_CEL) : muestraDe(ed)));
@@ -890,6 +915,8 @@ el.sugeridas.addEventListener('click', e => {
 el.grilla.addEventListener('click', e => {
   const reel = e.target.closest('.reel-abrir');
   if (reel) { abrirReel(reel.dataset.reel, reel); return; }
+  const verVideo = e.target.closest('[data-video]');
+  if (verVideo) { abrirReel(verVideo.dataset.video, verVideo); return; }
   const entrar = e.target.closest('[data-ed]');
   if (entrar) { entrarAnio(entrar.dataset.ed); return; }
   if (e.target.closest('.volver')) { salirAnio(); return; }
